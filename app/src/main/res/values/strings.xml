@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">RPAGv2</string>
+    <string name="btnAlertMenuText">!</string>
+    <string name="placeholderText">Placeholder</string>
+</resources>
