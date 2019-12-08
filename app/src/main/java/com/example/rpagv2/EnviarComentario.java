@@ -13,9 +13,9 @@ import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class EnviarAlerta extends Thread { //DatosAlerta
+public class EnviarComentario extends Thread {
 
-    DatosAlerta paquete;
+    Comentario paquete;
     MainActivity main;
     String IP;
     int PORT;
@@ -28,7 +28,7 @@ public class EnviarAlerta extends Thread { //DatosAlerta
     ObjectOutputStream objectOutputStream;
     BufferedReader br;
 
-    public EnviarAlerta(DatosAlerta paquete, MainActivity main, String IP, int PORT) {
+    public EnviarComentario(Comentario paquete, MainActivity main, String IP, int PORT) {
         this.paquete = paquete;
         this.main = main;
         this.IP = IP;
@@ -50,7 +50,7 @@ public class EnviarAlerta extends Thread { //DatosAlerta
 
 
             PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
-            printWriter.println("Alerta");
+            printWriter.println("Comentario");
 
             objectOutputStream = new ObjectOutputStream(out);
             //System.out.println("objectOutputStream establecido");
@@ -71,7 +71,7 @@ public class EnviarAlerta extends Thread { //DatosAlerta
             //System.exit(1);
         } catch (ConnectException ce) {
             Log.v("RPAG-Log","ConnectException: " + ce.getMessage());
-        } catch (IOException e) {
+        } catch  (IOException e) {
             Log.v( "RPAG-Log","No I/O");
             //System.exit(1);
         } finally {

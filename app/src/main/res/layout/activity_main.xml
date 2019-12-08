@@ -31,6 +31,12 @@
         app:layout_constraintBottom_toTopOf="@+id/btnAlertMenu"
         android:visibility="gone"/>
 
+    <include layout="@layout/alert_options"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:visibility="gone"/>
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

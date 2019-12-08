@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -67,16 +68,32 @@ public class ActualizarAlertas extends Thread {
             //System.out.println("Esperando Respuesta...");
 
             Log.v( "RPAG-Log","Esperando Respuesta...");
-            ArrayList<DatosAlerta> listaAlertas = (ArrayList<DatosAlerta>) objectInputStream.readObject();
 
+            PackDatos packDatos = (PackDatos) objectInputStream.readObject();
+            Log.v( "RPAG-Log","Objeto Recibido...");
+            ArrayList<DatosAlerta> listaAlertas = packDatos.listaDatosAlertas;
+            ArrayList<Confirmacion> listConfirmaciones = packDatos.listaConfirmaciones;
+            ArrayList<Reporte> listReportes = packDatos.listaReportes;
+            ArrayList<Comentario> listComentarios = packDatos.listaComentarios;
+
+            Log.v( "RPAG-Log","Alertas: " + listaAlertas.size());
+            Log.v( "RPAG-Log","Confirmaciones: " + listConfirmaciones.size());
+            Log.v( "RPAG-Log","Reportes: " + listReportes.size());
+            Log.v( "RPAG-Log","Comentarios: " + listComentarios.size());
+
+            /*
             String recibido = "Recibido: ";
             for (int i = 0; i < listaAlertas.size(); i++) {
                 recibido += mainActivity.getClase(listaAlertas.get(i).clase_id).name + ", ";
             }
             Log.v( "RPAG-Log",recibido);
+             */
             //System.out.println("Recibido: " + listaAlertas);
 
             mainActivity.listDatosAlertas = listaAlertas;
+            mainActivity.listConfirmaciones = listConfirmaciones;
+            mainActivity.listReportes = listReportes;
+            mainActivity.listComentarios = listComentarios;
 
             printWriter.close();
             socket.close();
@@ -86,9 +103,9 @@ public class ActualizarAlertas extends Thread {
         } catch (UnknownHostException e) {
             Log.v( "RPAG-Log","Unknown host: " + host);
             //System.exit(1);
-        } catch (IOException ex) {
-            Logger.getLogger(ActualizarAlertas.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
+        } catch (ConnectException ce) {
+            Log.v("RPAG-Log","ConnectException: " + ce.getMessage());
+        } catch (IOException | ClassNotFoundException ex) {
             Logger.getLogger(ActualizarAlertas.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
@@ -102,6 +119,8 @@ public class ActualizarAlertas extends Thread {
 
             } catch (IOException ex) {
                 ex.printStackTrace();
+            } catch (Exception e) {
+                Log.v("RPAG-Log","Exception: " + e.getMessage());
             }
         }
     }

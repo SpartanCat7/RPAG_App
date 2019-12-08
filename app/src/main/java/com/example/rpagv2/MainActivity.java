@@ -12,7 +12,9 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mapbox.mapboxsdk.Mapbox;
@@ -35,7 +37,9 @@ import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
-    String IP_SERVIDOR = "192.168.1.205";
+    int ID_Usuario = 0;
+
+    String IP_SERVIDOR = "192.168.1.201";
     int PORT_SERVIDOR = 6809;
 
     ClaseAlerta claseAccidente = new ClaseAlerta(1, "Accidente", R.drawable.frontal_crash, "icon_accidente");
@@ -50,6 +54,12 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Alerta> listAlertasMostradas = new ArrayList<>();
     ArrayList<DatosAlerta> listDatosAlertas = new ArrayList<>();
     ArrayList<ClaseAlerta> listClasesAlertas = new ArrayList<>();
+
+    ArrayList<Confirmacion> listConfirmaciones = new ArrayList<>();
+    ArrayList<Reporte> listReportes = new ArrayList<>();
+    ArrayList<Comentario> listComentarios = new ArrayList<>();
+
+    Alerta alertaSeleccionada;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,6 +146,16 @@ public class MainActivity extends AppCompatActivity {
             BtnAlertMarchas,
             BtnAlertCalleDanada,
             BtnAlertCorte;
+    LinearLayout layoutAlertOptions;
+    Button btnConfirmar, btnReportar, btnComentar;
+    TextView
+            txtTipoAlerta,
+            txtConfirmaciones,
+            txtReportes,
+            txtLatitud,
+            txtLongitud,
+            txtComentarios;
+    EditText txtComentar;
 
     void InitializeUI() {
         mapView = findViewById(R.id.mapView);
@@ -208,7 +228,45 @@ public class MainActivity extends AppCompatActivity {
         BtnAlertMarchas.setOnClickListener(alertBtnListener);
         BtnAlertCalleDanada.setOnClickListener(alertBtnListener);
         BtnAlertCorte.setOnClickListener(alertBtnListener);
+
+        layoutAlertOptions = findViewById(R.id.layoutAlertOptions);
+        btnConfirmar = findViewById(R.id.btnConfirmar);
+        btnReportar = findViewById(R.id.btnReportar);
+        btnComentar = findViewById(R.id.btnComentar);
+        txtTipoAlerta = findViewById(R.id.txtTipoAlerta);
+        txtConfirmaciones = findViewById(R.id.txtConfirmaciones);
+        txtReportes = findViewById(R.id.txtReportes);
+        txtLatitud = findViewById(R.id.txtLatitud);
+        txtLongitud = findViewById(R.id.txtLongitud);
+
+        txtComentar = findViewById(R.id.txtComentar);
+        txtComentarios = findViewById(R.id.txtComentarios);
+
+        btnConfirmar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EnviarNuevaConfirmacion(alertaSeleccionada);
+                layoutAlertOptions.setVisibility(View.GONE);
+            }
+        });
+        btnReportar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EnviarNuevoReporte(alertaSeleccionada);
+                layoutAlertOptions.setVisibility(View.GONE);
+            }
+        });
+        btnComentar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EnviarNuevoComentario(alertaSeleccionada, txtComentar.getText().toString());
+                txtComentar.setText("");
+                layoutAlertOptions.setVisibility(View.GONE);
+            }
+        });
     }
+
+
 
     MapboxMap myMapboxMap;
     SymbolManager symbolManager;
@@ -227,8 +285,10 @@ public class MainActivity extends AppCompatActivity {
                         symbolManager.addClickListener(new OnSymbolClickListener() {
                             @Override
                             public void onAnnotationClick(Symbol symbol) {
-                                Alerta alerta = getAlerta(symbol);
-                                Toast.makeText(getApplicationContext(),alerta.claseAlerta.name, Toast.LENGTH_SHORT).show();
+                                Alerta alerta = getAlertaBySymbol(symbol);
+                                //Toast.makeText(getApplicationContext(),alerta.claseAlerta.name, Toast.LENGTH_SHORT).show();
+                                AbrirMenuAlerta(alerta);
+
                             }
                         });
 
@@ -251,7 +311,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    void createAlert(int id, ClaseAlerta clase, double lat, double len) {
+    void createAlert(int id, ClaseAlerta clase, double lat, double len, Date fecha) {
 
         Float[] offset = {0f, 2.5f};
         Symbol symbol = symbolManager.create(new SymbolOptions()
@@ -260,12 +320,12 @@ public class MainActivity extends AppCompatActivity {
                 .withIconSize(0.10f)
                 .withIconOffset(offset));
 
-        Alerta alerta = new Alerta(id,lat,len,symbol,clase);
+        Alerta alerta = new Alerta(id,lat,len, fecha,symbol,clase);
         listAlertasMostradas.add(alerta);
     }
 
 
-    Alerta getAlerta(Symbol symbol){
+    Alerta getAlertaBySymbol(Symbol symbol){
         for (int i = 0; i < listAlertasMostradas.size(); i++){
             if (listAlertasMostradas.get(i).symbol == symbol) {
                 return listAlertasMostradas.get(i);
@@ -274,8 +334,90 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
+
+    void AbrirMenuAlerta(Alerta alerta){
+        layoutAlertOptions.setVisibility(View.VISIBLE);
+        alertaSeleccionada = alerta;
+
+        int contador_confirmaciones = 0;
+        int contador_reportes = 0;
+        btnConfirmar.setEnabled(true);
+        for (int i=0; i<listConfirmaciones.size(); i++){
+            if (listConfirmaciones.get(i).id_usuario == ID_Usuario && listConfirmaciones.get(i).id_alerta == alertaSeleccionada.id){
+                btnConfirmar.setEnabled(false);
+            }
+            if (listConfirmaciones.get(i).id_alerta == alertaSeleccionada.id) {
+                contador_confirmaciones++;
+            }
+        }
+        btnReportar.setEnabled(true);
+        for (int i=0; i<listReportes.size(); i++){
+            if (listReportes.get(i).id_usuario == ID_Usuario && listReportes.get(i).id_alerta == alertaSeleccionada.id){
+                btnReportar.setEnabled(false);
+            }
+            if (listReportes.get(i).id_alerta == alertaSeleccionada.id) {
+                contador_reportes++;
+            }
+        }
+
+        txtTipoAlerta.setText("Tipo: " + alerta.claseAlerta.name);
+        txtConfirmaciones.setText("Confirmaciones: " + contador_confirmaciones);
+        txtReportes.setText("Reportes: " + contador_reportes);
+        txtLatitud.setText("Latitud: " + alerta.lat);
+        txtLongitud.setText("Longitud: " + alerta.len);
+
+        txtComentarios.setText("");
+        for (int i=0; i<listComentarios.size(); i++){
+            if(listComentarios.get(i).id_alerta == alertaSeleccionada.id){
+                txtComentarios.append(System.lineSeparator());
+                txtComentarios.append(listComentarios.get(i).texto);
+            }
+        }
+    }
+
+    private void EnviarNuevaConfirmacion(Alerta alerta) {
+        Confirmacion nuevaConfirmacion = new Confirmacion();
+        nuevaConfirmacion.id_alerta = alerta.id;
+        nuevaConfirmacion.id_usuario = ID_Usuario;
+        nuevaConfirmacion.fecha = new Date();
+
+        EnviarConfirmacion enviarAlerta = new EnviarConfirmacion(nuevaConfirmacion,this,IP_SERVIDOR,PORT_SERVIDOR);
+        try {
+            enviarAlerta.join(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    private void EnviarNuevoReporte(Alerta alerta) {
+        Reporte nuevoReporte = new Reporte();
+        nuevoReporte.id_alerta = alerta.id;
+        nuevoReporte.id_usuario = ID_Usuario;
+        nuevoReporte.fecha = new Date();
+
+        EnviarReporte enviarReporte = new EnviarReporte(nuevoReporte,this,IP_SERVIDOR,PORT_SERVIDOR);
+        try {
+            enviarReporte.join(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    private void EnviarNuevoComentario(Alerta alerta, String texto) {
+        Comentario nuevoComentario = new Comentario();
+        nuevoComentario.id_alerta = alerta.id;
+        nuevoComentario.id_usuario = ID_Usuario;
+        nuevoComentario.fecha = new Date();
+        nuevoComentario.texto = texto;
+
+        EnviarComentario enviarComentario = new EnviarComentario(nuevoComentario,this,IP_SERVIDOR,PORT_SERVIDOR);
+        try {
+            enviarComentario.join(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     void EnviarNuevaAlerta(ClaseAlerta claseAlerta) {
-        layoutAlertMenu.setVisibility(View.GONE);
+
 
         //Toast.makeText(this, claseAlerta.name, Toast.LENGTH_SHORT).show();
         DatosAlerta datosAlerta = new DatosAlerta(0,1,location.getLatitude(),location.getLongitude(),claseAlerta.id,new Date());
@@ -306,7 +448,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void run() {
             actualizarListaAlertas();
-            actualizadorAlertas.postDelayed(this, 5000);
+            actualizadorAlertas.postDelayed(this, 15000);
         }
     };
 
@@ -322,9 +464,23 @@ public class MainActivity extends AppCompatActivity {
             int id = listDatosAlertas.get(i).id;
             double latitud = listDatosAlertas.get(i).latitud;
             double longitud = listDatosAlertas.get(i).longitud;
+            Date fecha = listDatosAlertas.get(i).fecha;
             ClaseAlerta claseAlerta = getClase(listDatosAlertas.get(i).clase_id);
 
-            createAlert(id, claseAlerta, latitud, longitud);
+            createAlert(id, claseAlerta, latitud, longitud, fecha);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(layoutAlertOptions.getVisibility() == View.VISIBLE){
+            layoutAlertOptions.setVisibility(View.GONE);
+        }
+        else if(layoutAlertMenu.getVisibility() == View.VISIBLE) {
+            layoutAlertMenu.setVisibility(View.GONE);
+        }
+        else {
+            super.onBackPressed();
         }
     }
 

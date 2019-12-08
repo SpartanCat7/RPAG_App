@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="20dp"
+    android:id="@+id/layoutAlertOptions"
+    android:background="@color/colorWhite">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/alert_options_title"
+        android:textSize="10pt"
+        android:layout_marginBottom="10dp"/>
+
+    <TextView
+        android:id="@+id/txtTipoAlerta"
+        android:text="Alerta:"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    <TextView
+        android:id="@+id/txtConfirmaciones"
+        android:text="Confirmaciones:"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    <TextView
+        android:id="@+id/txtReportes"
+        android:text="Reportes:"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    <TextView
+        android:id="@+id/txtLatitud"
+        android:text="Latitud"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    <TextView
+        android:id="@+id/txtLongitud"
+        android:text="Longitud:"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp">
+        <Button
+            android:id="@+id/btnConfirmar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_confirmar_alerta"
+            android:layout_weight="3"
+            android:background="@color/colorPrimary" />
+        <Button
+            android:id="@+id/btnReportar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_reportar"
+            android:layout_weight="3"
+            android:background="@color/colorAccent"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="10dp">
+        <EditText
+            android:id="@+id/txtComentar"
+            android:layout_weight="15"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="@string/comment_hint" />
+        <Button
+            android:id="@+id/btnComentar"
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btnComentar_enviar"/>
+    </LinearLayout>
+    <TextView
+        android:id="@+id/txtComentarios"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/txt_comentarios_placeholder"
+        android:layout_marginBottom="10dp"/>
+</LinearLayout>

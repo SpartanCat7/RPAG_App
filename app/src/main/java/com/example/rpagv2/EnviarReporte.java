@@ -13,9 +13,9 @@ import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class EnviarAlerta extends Thread { //DatosAlerta
+public class EnviarReporte extends Thread {
 
-    DatosAlerta paquete;
+    Reporte paquete;
     MainActivity main;
     String IP;
     int PORT;
@@ -28,7 +28,7 @@ public class EnviarAlerta extends Thread { //DatosAlerta
     ObjectOutputStream objectOutputStream;
     BufferedReader br;
 
-    public EnviarAlerta(DatosAlerta paquete, MainActivity main, String IP, int PORT) {
+    public EnviarReporte(Reporte paquete, MainActivity main, String IP, int PORT) {
         this.paquete = paquete;
         this.main = main;
         this.IP = IP;
@@ -50,7 +50,7 @@ public class EnviarAlerta extends Thread { //DatosAlerta
 
 
             PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
-            printWriter.println("Alerta");
+            printWriter.println("Reporte");
 
             objectOutputStream = new ObjectOutputStream(out);
             //System.out.println("objectOutputStream establecido");
@@ -69,9 +69,7 @@ public class EnviarAlerta extends Thread { //DatosAlerta
         } catch (UnknownHostException e) {
             Log.v( "RPAG-Log","Unknown host: " + main.IP_SERVIDOR);
             //System.exit(1);
-        } catch (ConnectException ce) {
-            Log.v("RPAG-Log","ConnectException: " + ce.getMessage());
-        } catch (IOException e) {
+        } catch  (IOException e) {
             Log.v( "RPAG-Log","No I/O");
             //System.exit(1);
         } finally {
@@ -83,6 +81,8 @@ public class EnviarAlerta extends Thread { //DatosAlerta
                 objectOutputStream.close();
                 socket.close();
                 Log.v( "RPAG-Log","Conexion Cerrada");
+            } catch (ConnectException ce) {
+                Log.v("RPAG-Log","ConnectException: " + ce.getMessage());
             } catch (IOException ex) {
                 ex.printStackTrace();
             }

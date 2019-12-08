@@ -2,4 +2,10 @@
     <string name="app_name">RPAGv2</string>
     <string name="btnAlertMenuText">!</string>
     <string name="placeholderText">Placeholder</string>
+    <string name="alert_options_title">Opciones de Alerta</string>
+    <string name="btn_confirmar_alerta">Confirmar</string>
+    <string name="btn_reportar">Reportar</string>
+    <string name="comment_hint">Algun comentario?</string>
+    <string name="btnComentar_enviar"><![CDATA[>>]]></string>
+    <string name="txt_comentarios_placeholder">Comentarios...</string>
 </resources>
