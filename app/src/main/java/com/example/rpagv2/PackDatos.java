@@ -7,4 +7,5 @@ public class PackDatos implements java.io.Serializable {
     public ArrayList<Confirmacion> listaConfirmaciones;
     public ArrayList<Reporte> listaReportes;
     public ArrayList<Comentario> listaComentarios;
+    public ArrayList<Imagen> listaImagenes;
 }

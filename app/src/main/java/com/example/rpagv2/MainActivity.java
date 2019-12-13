@@ -1,18 +1,25 @@
 package com.example.rpagv2;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,9 +36,15 @@ import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager;
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -39,7 +52,10 @@ public class MainActivity extends AppCompatActivity {
 
     int ID_Usuario = 0;
 
-    String IP_SERVIDOR = "192.168.1.201";
+    private static final int CAMERA_REQUEST = 1888;
+    private static final int CAMERA_PERMISSION_CODE = 100;
+
+    String IP_SERVIDOR = "192.168.1.205";
     int PORT_SERVIDOR = 6809;
 
     ClaseAlerta claseAccidente = new ClaseAlerta(1, "Accidente", R.drawable.frontal_crash, "icon_accidente");
@@ -52,12 +68,13 @@ public class MainActivity extends AppCompatActivity {
     ClaseAlerta claseCorte = new ClaseAlerta(8, "Corte Electrico", R.drawable.flash, "icon_corte");
 
     ArrayList<Alerta> listAlertasMostradas = new ArrayList<>();
+
     ArrayList<DatosAlerta> listDatosAlertas = new ArrayList<>();
     ArrayList<ClaseAlerta> listClasesAlertas = new ArrayList<>();
-
     ArrayList<Confirmacion> listConfirmaciones = new ArrayList<>();
     ArrayList<Reporte> listReportes = new ArrayList<>();
     ArrayList<Comentario> listComentarios = new ArrayList<>();
+    ArrayList<Imagen> listImagenes = new ArrayList<>();
 
     Alerta alertaSeleccionada;
 
@@ -68,10 +85,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         InitializeVariables();
         InitializeLocation();
+        GetPermissions();
         InitializeUI();
         InitializeMapbox(savedInstanceState);
 
-        actualizadorAlertas.post(actualizacion);
+        actualizadorAlertas.postDelayed(actualizacion, 5000);
     }
 
     String accessToken = "pk.eyJ1Ijoic3BhcnRhbmNhdDciLCJhIjoiY2p2ZzVkOWRrMDQ1ejQxcmc2bjgxc3JtYSJ9.Nn4-Xa4AaeoVe3p3z67I7g";
@@ -101,13 +119,6 @@ public class MainActivity extends AppCompatActivity {
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             int requestResponse = 0;
             ActivityCompat.requestPermissions(
                     this,
@@ -122,15 +133,32 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+    void GetPermissions(){
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            int requestResponse = 0;
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    requestResponse);
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            int requestResponse = 0;
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    requestResponse);
+        }
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(grantResults.length > 0) {
-            InitializeLocation();
+        if(grantResults.length == 0) {
+            Toast.makeText(getApplicationContext(), "PERMISOS DENEGADOS!", Toast.LENGTH_SHORT).show();
+            GetPermissions();
         }
         else {
-            Toast.makeText(getApplicationContext(), "PERMISOS DENEGADOS!", Toast.LENGTH_SHORT).show();
+            InitializeLocation();
         }
     }
 
@@ -156,6 +184,8 @@ public class MainActivity extends AppCompatActivity {
             txtLongitud,
             txtComentarios;
     EditText txtComentar;
+    CheckBox chkIncluidePic;
+    ImageView imgImagenAlerta;
 
     void InitializeUI() {
         mapView = findViewById(R.id.mapView);
@@ -214,6 +244,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                 }
                 Log.v( "RPAG-Log","Envio exitoso");
+                layoutAlertMenu.setVisibility(View.GONE);
                 actualizarListaAlertas();
                 mostrarAlertas();
             }
@@ -264,6 +295,9 @@ public class MainActivity extends AppCompatActivity {
                 layoutAlertOptions.setVisibility(View.GONE);
             }
         });
+
+        chkIncluidePic = findViewById(R.id.chkIncluidePic);
+        imgImagenAlerta = findViewById(R.id.imgImagenAlerta);
     }
 
 
@@ -366,6 +400,37 @@ public class MainActivity extends AppCompatActivity {
         txtLatitud.setText("Latitud: " + alerta.lat);
         txtLongitud.setText("Longitud: " + alerta.len);
 
+        imgImagenAlerta.setImageBitmap(null);
+        for (int i=0; i<listImagenes.size(); i++){
+            Log.v( "RPAG-Log","Comparando alerta " + alertaSeleccionada.id + " y imagen de " + listImagenes.get(i).id_alerta);
+            if (listImagenes.get(i).id_alerta == alertaSeleccionada.id){
+                Log.v( "RPAG-Log","Imagen encontrada");
+
+                String path = getCacheDir() + "/TempPics";
+                File dir = new File(path);
+                if(dir.mkdirs()){
+                    Log.v( "RPAG-Log","Directorio en cache creado");
+                }
+
+                File file = new File(path, listImagenes.get(i).nombre);
+                Log.v( "RPAG-Log","Temp file dir: " + file.getAbsolutePath());
+                try {
+                    if(!file.exists()){
+                        file.createNewFile();
+                        Log.v( "RPAG-Log","Archivo creado");
+                        FileUtils.writeByteArrayToFile(file,listImagenes.get(i).bitmap);
+                        Log.v( "RPAG-Log","Archivo escrito");
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
+                imgImagenAlerta.setImageBitmap(bitmap);
+                break;
+            }
+        }
+
         txtComentarios.setText("");
         for (int i=0; i<listComentarios.size(); i++){
             if(listComentarios.get(i).id_alerta == alertaSeleccionada.id){
@@ -383,7 +448,7 @@ public class MainActivity extends AppCompatActivity {
 
         EnviarConfirmacion enviarAlerta = new EnviarConfirmacion(nuevaConfirmacion,this,IP_SERVIDOR,PORT_SERVIDOR);
         try {
-            enviarAlerta.join(2000);
+            enviarAlerta.join(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -418,18 +483,18 @@ public class MainActivity extends AppCompatActivity {
 
     void EnviarNuevaAlerta(ClaseAlerta claseAlerta) {
 
+        DatosAlerta datosAlerta = new DatosAlerta(0,ID_Usuario,location.getLatitude(),location.getLongitude(),claseAlerta.id,new Date());
 
-        //Toast.makeText(this, claseAlerta.name, Toast.LENGTH_SHORT).show();
-        DatosAlerta datosAlerta = new DatosAlerta(0,1,location.getLatitude(),location.getLongitude(),claseAlerta.id,new Date());
-
-        //String loc = "Longitud: " + datosAlerta.latitud + " / latitud: " + datosAlerta.longitud;
-        //Toast.makeText(this, loc, Toast.LENGTH_SHORT).show();
-
-        EnviarAlerta enviarAlerta = new EnviarAlerta(datosAlerta,this,IP_SERVIDOR,PORT_SERVIDOR);
-        try {
-            enviarAlerta.join(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        if(chkIncluidePic.isChecked()){
+           EnviarNuevaAlertaConImagen(datosAlerta);
+        }
+        else {
+            EnviarAlerta enviarAlerta = new EnviarAlerta(datosAlerta,this,IP_SERVIDOR,PORT_SERVIDOR);
+            try {
+                enviarAlerta.join(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -437,10 +502,11 @@ public class MainActivity extends AppCompatActivity {
         Log.v( "RPAG-Log","actualizarListaAlertas()");
         ActualizarAlertas actualizarAlertas = new ActualizarAlertas(IP_SERVIDOR, PORT_SERVIDOR, this);
         try {
-            actualizarAlertas.join(2000);
+            actualizarAlertas.join(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        mostrarAlertas();
     }
 
     Handler actualizadorAlertas = new Handler();
@@ -448,7 +514,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void run() {
             actualizarListaAlertas();
-            actualizadorAlertas.postDelayed(this, 15000);
+            actualizadorAlertas.postDelayed(this, 30000);
         }
     };
 
@@ -468,6 +534,25 @@ public class MainActivity extends AppCompatActivity {
             ClaseAlerta claseAlerta = getClase(listDatosAlertas.get(i).clase_id);
 
             createAlert(id, claseAlerta, latitud, longitud, fecha);
+        }
+    }
+
+    DatosAlerta datosAlerta_EnvioImagen;
+    ClaseAlerta claseAlerta_EnvioImagen;
+    void EnviarNuevaAlertaConImagen(DatosAlerta datosAlerta){
+
+        datosAlerta_EnvioImagen = datosAlerta;
+        claseAlerta_EnvioImagen = getClase(datosAlerta.clase_id);
+        Log.v( "RPAG-Log","datosAlerta.id = " + datosAlerta_EnvioImagen.id);
+        Log.v( "RPAG-Log","claseAlerta.name = " + claseAlerta_EnvioImagen.name);
+        if (ActivityCompat.checkSelfPermission(this,Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
+        }
+        else
+        {
+            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            startActivityForResult(cameraIntent, CAMERA_REQUEST);
         }
     }
 
@@ -493,12 +578,79 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
+    static File GuardarBitmapComoJPG(Bitmap bitmap, String path, String filename){
+
+        File file = new File(path, filename);
+        File directory = new File(path);
+
+        Log.v("RPAG-Log", "File: " + file.getAbsolutePath());
+        Log.v("RPAG-Log", "Directory: " + directory.getAbsolutePath());
+        if(directory.mkdirs()){
+            Log.v("RPAG-Log", "Nuevo directorio creado");
+        }
+        try {
+            if(file.createNewFile()){
+                Log.v("RPAG-Log", "Nuevo archivo creado");
+                bitmap.compress(Bitmap.CompressFormat.PNG,75,new FileOutputStream(file));
+            }
+            else {
+                Log.v("RPAG-Log", "Nuevo archivo no pudo ser creado");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return file;
+    }
+
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
+            Log.v( "RPAG-Log","Enviando datosAlerta.id = " + datosAlerta_EnvioImagen.id + ", fecha = " + datosAlerta_EnvioImagen.fecha.toString());
+            Log.v( "RPAG-Log","Enviando claseAlerta.name = " + claseAlerta_EnvioImagen.name);
+
+            Bitmap photo = (Bitmap) data.getExtras().get("data");
+            Log.v("RPAG-Log", "Bitmap capturado: " + photo.getByteCount() + " bytes");
+
+            String nombre_imagen = new Date().getTime() + "_" + claseAlerta_EnvioImagen.name + ".jpg";
+            File imgFile = GuardarBitmapComoJPG(photo,Environment.getExternalStorageDirectory().getAbsolutePath() + "/RPAG_Pics",nombre_imagen);
+
+            Imagen imagen = new Imagen();
+            try {
+                if(imgFile.exists()){
+                    imagen.bitmap = FileUtils.readFileToByteArray(imgFile);
+                }
+                else {
+                    Log.v("RPAG-Log", "Archivo no existe");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            imagen.id_alerta = 0;
+            imagen.fecha = new Date();
+            imagen.nombre = nombre_imagen;
+            imagen.id_usuario = datosAlerta_EnvioImagen.id_usuario;
+
+            imagen.alerta = datosAlerta_EnvioImagen;
+
+            EnviarImagen enviarImagen = new EnviarImagen(imagen, this, IP_SERVIDOR, PORT_SERVIDOR);
+            try {
+                enviarImagen.join(4000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
     @Override
     public void onStart() {
         super.onStart();
         Log.println(Log.ASSERT,"MapboxTestLog","onStart()");
         mapView.onStart();
-
 
     }
 

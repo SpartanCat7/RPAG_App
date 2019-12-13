@@ -8,4 +8,5 @@
     <string name="comment_hint">Algun comentario?</string>
     <string name="btnComentar_enviar"><![CDATA[>>]]></string>
     <string name="txt_comentarios_placeholder">Comentarios...</string>
+    <string name="incluir_imagen">Incluir Imagen</string>
 </resources>

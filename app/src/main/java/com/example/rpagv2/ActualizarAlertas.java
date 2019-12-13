@@ -75,11 +75,13 @@ public class ActualizarAlertas extends Thread {
             ArrayList<Confirmacion> listConfirmaciones = packDatos.listaConfirmaciones;
             ArrayList<Reporte> listReportes = packDatos.listaReportes;
             ArrayList<Comentario> listComentarios = packDatos.listaComentarios;
+            ArrayList<Imagen> listImagenes = packDatos.listaImagenes;
 
             Log.v( "RPAG-Log","Alertas: " + listaAlertas.size());
             Log.v( "RPAG-Log","Confirmaciones: " + listConfirmaciones.size());
             Log.v( "RPAG-Log","Reportes: " + listReportes.size());
             Log.v( "RPAG-Log","Comentarios: " + listComentarios.size());
+            Log.v( "RPAG-Log","Imagenes: " + listImagenes.size());
 
             /*
             String recibido = "Recibido: ";
@@ -94,6 +96,7 @@ public class ActualizarAlertas extends Thread {
             mainActivity.listConfirmaciones = listConfirmaciones;
             mainActivity.listReportes = listReportes;
             mainActivity.listComentarios = listComentarios;
+            mainActivity.listImagenes = listImagenes;
 
             printWriter.close();
             socket.close();
