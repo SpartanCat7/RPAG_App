@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int CAMERA_REQUEST = 1888;
     private static final int CAMERA_PERMISSION_CODE = 100;
 
-    String IP_SERVIDOR = "192.168.1.205";
+    String IP_SERVIDOR = "192.168.137.1";
     int PORT_SERVIDOR = 6809;
 
     ClaseAlerta claseAccidente = new ClaseAlerta(1, "Accidente", R.drawable.frontal_crash, "icon_accidente");
@@ -578,7 +578,7 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
-    static File GuardarBitmapComoJPG(Bitmap bitmap, String path, String filename){
+    static File GuardarBitmapComoPNG(Bitmap bitmap, String path, String filename){
 
         File file = new File(path, filename);
         File directory = new File(path);
@@ -615,8 +615,10 @@ public class MainActivity extends AppCompatActivity {
             Bitmap photo = (Bitmap) data.getExtras().get("data");
             Log.v("RPAG-Log", "Bitmap capturado: " + photo.getByteCount() + " bytes");
 
-            String nombre_imagen = new Date().getTime() + "_" + claseAlerta_EnvioImagen.name + ".jpg";
-            File imgFile = GuardarBitmapComoJPG(photo,Environment.getExternalStorageDirectory().getAbsolutePath() + "/RPAG_Pics",nombre_imagen);
+            String nombre_imagen = new Date().getTime() + "_" + claseAlerta_EnvioImagen.name + ".png";
+            File imgFile = GuardarBitmapComoPNG(
+                    photo,
+                    Environment.getExternalStorageDirectory().getAbsolutePath() + "/RPAG_Pics",nombre_imagen);
 
             Imagen imagen = new Imagen();
             try {
