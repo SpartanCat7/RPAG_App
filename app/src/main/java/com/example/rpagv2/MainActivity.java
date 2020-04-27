@@ -3,7 +3,9 @@ package com.example.rpagv2;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -48,6 +50,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
+import static android.content.pm.PackageManager.GET_META_DATA;
+
 public class MainActivity extends AppCompatActivity {
 
     int ID_Usuario = 0;
@@ -58,14 +62,22 @@ public class MainActivity extends AppCompatActivity {
     String IP_SERVIDOR = "192.168.137.1";
     int PORT_SERVIDOR = 6809;
 
-    ClaseAlerta claseAccidente = new ClaseAlerta(1, "Accidente", R.drawable.frontal_crash, "icon_accidente");
-    ClaseAlerta claseIncendio = new ClaseAlerta(2, "Incendio", R.drawable.fire, "icon_incendio");
-    ClaseAlerta claseHerido = new ClaseAlerta(3, "Persona Herida", R.drawable.band_aid, "icon_herido");
-    ClaseAlerta claseBloqueo = new ClaseAlerta(4, "Bloqueo", R.drawable.road_blockade, "icon_bloqueo");
-    ClaseAlerta claseCongestionamiento = new ClaseAlerta(5, "Congestionamiento", R.drawable.traffic_jam, "icon_congestionamiento");
-    ClaseAlerta claseMarchas = new ClaseAlerta(6, "Marchas", R.drawable.parade, "icon_marchas");
-    ClaseAlerta claseCalleDanada = new ClaseAlerta(7, "Calle Dañada", R.drawable.road, "icon_calle");
-    ClaseAlerta claseCorte = new ClaseAlerta(8, "Corte Electrico", R.drawable.flash, "icon_corte");
+    ClaseAlerta claseAccidente = new ClaseAlerta(
+            1,  "Accidente", R.drawable.frontal_crash, "icon_accidente");
+    ClaseAlerta claseIncendio = new ClaseAlerta(
+            2,  "Incendio", R.drawable.fire, "icon_incendio");
+    ClaseAlerta claseHerido = new ClaseAlerta(
+            3,  "Persona Herida", R.drawable.band_aid, "icon_herido");
+    ClaseAlerta claseBloqueo = new ClaseAlerta(
+            4,  "Bloqueo", R.drawable.road_blockade, "icon_bloqueo");
+    ClaseAlerta claseCongestionamiento = new ClaseAlerta(
+            5,  "Congestionamiento", R.drawable.traffic_jam, "icon_congestionamiento");
+    ClaseAlerta claseMarchas = new ClaseAlerta(
+            6,  "Marchas", R.drawable.parade, "icon_marchas");
+    ClaseAlerta claseCalleDanada = new ClaseAlerta(
+            7,  "Calle Dañada", R.drawable.road, "icon_calle");
+    ClaseAlerta claseCorte = new ClaseAlerta(
+            8,  "Corte Electrico", R.drawable.flash, "icon_corte");
 
     ArrayList<Alerta> listAlertasMostradas = new ArrayList<>();
 
@@ -76,11 +88,13 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Comentario> listComentarios = new ArrayList<>();
     ArrayList<Imagen> listImagenes = new ArrayList<>();
 
+    AdminNumEmergencias adminNumEmergencias;
     Alerta alertaSeleccionada;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        LoadLanguaje();
         InstanciateMapbox();
         setContentView(R.layout.activity_main);
         InitializeVariables();
@@ -88,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         GetPermissions();
         InitializeUI();
         InitializeMapbox(savedInstanceState);
-
+        resetTitles();
         actualizadorAlertas.postDelayed(actualizacion, 5000);
     }
 
@@ -99,6 +113,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void InitializeVariables() {
+
+        adminNumEmergencias = new AdminNumEmergencias((AdminNumEmergencias.getSystemCountry(this)));
+
+        claseAccidente.name = getResources().getString(R.string.accidente);
+
         listClasesAlertas.add(claseAccidente);
         listClasesAlertas.add(claseIncendio);
         listClasesAlertas.add(claseHerido);
@@ -125,7 +144,6 @@ public class MainActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     requestResponse);
             Toast.makeText(getApplicationContext(), "Sin permisos", Toast.LENGTH_SHORT).show();
-            return;
         }
         else {
             Toast.makeText(this, "Localizacion Inicializada", Toast.LENGTH_SHORT).show();
@@ -163,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     MapView mapView;
-    Button btnAlertMenu;
+    Button btnAlertMenu, btnSpanish, btnEnglish, btnAutoLang;
     LinearLayout layoutAlertMenu;
     LinearLayout
             btnAlertAccidente,
@@ -201,6 +219,28 @@ public class MainActivity extends AppCompatActivity {
                 } else if (layoutAlertMenu.getVisibility() == View.GONE) {
                     layoutAlertMenu.setVisibility(View.VISIBLE);
                 }
+            }
+        });
+
+        btnSpanish = findViewById(R.id.btnSpanish);
+        btnSpanish.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setNewLocale(MainActivity.this, LocaleManager.SPANISH);
+            }
+        });
+        btnEnglish = findViewById(R.id.btnEnglish);
+        btnEnglish.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setNewLocale(MainActivity.this, LocaleManager.ENGLISH);
+            }
+        });
+        btnAutoLang = findViewById(R.id.btnAuto);
+        btnAutoLang.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setNewLocale(MainActivity.this, LocaleManager.AUTO);
             }
         });
 
@@ -299,8 +339,6 @@ public class MainActivity extends AppCompatActivity {
         chkIncluidePic = findViewById(R.id.chkIncluidePic);
         imgImagenAlerta = findViewById(R.id.imgImagenAlerta);
     }
-
-
 
     MapboxMap myMapboxMap;
     SymbolManager symbolManager;
@@ -496,6 +534,9 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+
+        int numeroEmergencia = adminNumEmergencias.getEmergencyNumber(claseAlerta.id);
+        adminNumEmergencias.dialogEmergencyCall(this, numeroEmergencia);
     }
 
     void actualizarListaAlertas() {
@@ -603,8 +644,6 @@ public class MainActivity extends AppCompatActivity {
         return file;
     }
 
-
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -646,6 +685,27 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+    }
+
+    private void LoadLanguaje() {
+
+    }
+
+    protected void resetTitles() {
+        try {
+            ActivityInfo info = getPackageManager().getActivityInfo(getComponentName(), GET_META_DATA);
+            if (info.labelRes != 0) {
+                setTitle(info.labelRes);
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setNewLocale(AppCompatActivity context, @LocaleManager.LocaleDef String language) {
+        LocaleManager.setNewLocale(this, language);
+        Intent intent = context.getIntent();
+        startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK));
     }
 
     @Override
@@ -692,4 +752,8 @@ public class MainActivity extends AppCompatActivity {
         mapView.onSaveInstanceState(outState);
     }
 
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleManager.setLocale(newBase));
+    }
 }

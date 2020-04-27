@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">RPAGv2</string>
+    <string name="btnAlertMenuText">!</string>
+    <string name="placeholderText">Placeholder</string>
+    <string name="alert_options_title">Opciones de Alerta</string>
+    <string name="btn_confirmar_alerta">Confirmar</string>
+    <string name="btn_reportar">Reportar</string>
+    <string name="comment_hint">Algun comentario?</string>
+    <string name="btnComentar_enviar"><![CDATA[>>]]></string>
+    <string name="txt_comentarios_placeholder">Comentarios...</string>
+    <string name="incluir_imagen">Incluir Imagen</string>
+    <string name="accidente">Accidente</string>
+    <string name="incendio">Incendio</string>
+    <string name="herido">Herido</string>
+    <string name="bloqueo">Bloqueo</string>
+    <string name="congestionamiento">Congestionamiento</string>
+    <string name="marchas">Marchas</string>
+    <string name="calle_danada">Calle Dañada</string>
+    <string name="corte_electrico">Corte Electrico</string>
+    <string name="permisos_faltantes">Permisos Faltantes</string>
+    <string name="dialogo_llamar">¿Desearia llamar a servicios de emergencia locales?</string>
+    <string name="llamar">Llamar</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="llamada_emergencia">LLamada de Emergencia</string>
+</resources>

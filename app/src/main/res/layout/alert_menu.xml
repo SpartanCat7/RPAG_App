@@ -37,7 +37,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="Accidente"
+                android:text="@string/accidente"
                 android:textSize="16sp"
                 android:padding="10dp"
                 android:paddingStart="30dp"
@@ -58,7 +58,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="Incendio"
+                android:text="@string/incendio"
                 android:textSize="16sp"
                 android:padding="10dp"
                 android:paddingStart="30dp"
@@ -79,7 +79,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="Herido"
+                android:text="@string/herido"
                 android:textSize="16sp"
                 android:padding="10dp"
                 android:paddingStart="30dp"
@@ -100,7 +100,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="Bloqueo"
+                android:text="@string/bloqueo"
                 android:textSize="16sp"
                 android:padding="10dp"
                 android:paddingStart="30dp"
@@ -121,7 +121,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="Congestionamiento"
+                android:text="@string/congestionamiento"
                 android:textSize="16sp"
                 android:padding="10dp"
                 android:paddingStart="30dp"
@@ -142,7 +142,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="Marchas"
+                android:text="@string/marchas"
                 android:textSize="16sp"
                 android:padding="10dp"
                 android:paddingStart="30dp"
@@ -163,7 +163,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="Calle Dañada"
+                android:text="@string/calle_danada"
                 android:textSize="16sp"
                 android:padding="10dp"
                 android:paddingStart="30dp"
@@ -184,7 +184,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="Corte Electrico"
+                android:text="@string/corte_electrico"
                 android:textSize="16sp"
                 android:padding="10dp"
                 android:paddingStart="30dp"

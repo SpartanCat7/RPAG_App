@@ -16,6 +16,28 @@
         mapbox:mapbox_cameraZoom="11" />
 
     <Button
+        android:id="@+id/btnSpanish"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ES"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+    <Button
+        android:id="@+id/btnEnglish"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="EN"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btnSpanish"/>
+    <Button
+        android:id="@+id/btnAuto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="AUTO"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btnEnglish"/>
+
+    <Button
         android:id="@+id/btnAlertMenu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

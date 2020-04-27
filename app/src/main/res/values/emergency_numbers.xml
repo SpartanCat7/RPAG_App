@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="bo_accident">100</integer>
+    <integer name="bo_corte_electrico">413</integer>
+
+    <integer name="us_corte_electrico">123</integer>
+
+</resources>
