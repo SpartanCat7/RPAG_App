@@ -2,19 +2,19 @@ package com.example.rpagv2;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -49,6 +49,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Objects;
 
 import static android.content.pm.PackageManager.GET_META_DATA;
 
@@ -59,8 +60,11 @@ public class MainActivity extends AppCompatActivity {
     private static final int CAMERA_REQUEST = 1888;
     private static final int CAMERA_PERMISSION_CODE = 100;
 
-    String IP_SERVIDOR = "192.168.137.1";
-    int PORT_SERVIDOR = 6809;
+
+    final static String IP_SERVIDOR = "192.168.0.6";
+    final static int PORT_SERVIDOR = 6809;
+
+    final static String CLASS_LIST_TAG = "CLASS_LIST_TAG";
 
     ClaseAlerta claseAccidente = new ClaseAlerta(
             1,  "Accidente", R.drawable.frontal_crash, "icon_accidente");
@@ -81,6 +85,10 @@ public class MainActivity extends AppCompatActivity {
 
     ArrayList<Alerta> listAlertasMostradas = new ArrayList<>();
 
+    String myLocationSymbolName = "MyLocationIcon";
+    int myLocationSymbolDrawable = R.drawable.circle_blue_overlay;
+    Symbol myLocationSymbol;
+
     ArrayList<DatosAlerta> listDatosAlertas = new ArrayList<>();
     ArrayList<ClaseAlerta> listClasesAlertas = new ArrayList<>();
     ArrayList<Confirmacion> listConfirmaciones = new ArrayList<>();
@@ -88,22 +96,56 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Comentario> listComentarios = new ArrayList<>();
     ArrayList<Imagen> listImagenes = new ArrayList<>();
 
+    PackDatosUpdateReceiver packDatosUpdateReceiver;
+    LocationUpdateReceiver locationUpdateReceiver;
     AdminNumEmergencias adminNumEmergencias;
     Alerta alertaSeleccionada;
+    boolean mapboxLoaded = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         LoadLanguaje();
         InstanciateMapbox();
+
         setContentView(R.layout.activity_main);
-        InitializeVariables();
-        InitializeLocation();
-        GetPermissions();
         InitializeUI();
+        InitializeVariables();
         InitializeMapbox(savedInstanceState);
+        InitializeBackgroundService();
+        RegisterBroadcastReceivers();
+
+        GetPermissions();
+
         resetTitles();
-        actualizadorAlertas.postDelayed(actualizacion, 5000);
+
+        SendPackDatosUpdateRequest();
+    }
+
+    private void InitializeBackgroundService() {
+        Log.i( "RPAG-Log","InitializeBackgroundService()");
+        Intent backgroundService = new Intent(this, BackgroundService.class);
+        backgroundService.putExtra(CLASS_LIST_TAG, listClasesAlertas);
+        startService(backgroundService);
+    }
+
+    private void RegisterBroadcastReceivers() {
+        Log.i( "RPAG-Log","RegisterBroadcastReceivers()");
+        IntentFilter packDatosUpdateFilter = new IntentFilter(BackgroundService.ACTION_PACKDATOS_RESPONSE);
+        packDatosUpdateFilter.addCategory(Intent.CATEGORY_DEFAULT);
+        packDatosUpdateReceiver = new PackDatosUpdateReceiver();
+
+        IntentFilter locationUpdateFilter = new IntentFilter(MyLocationListener.ACTION_LOCATION_UPDATE);
+        locationUpdateFilter.addCategory(Intent.CATEGORY_DEFAULT);
+        locationUpdateReceiver = new LocationUpdateReceiver();
+
+        try {
+            registerReceiver(packDatosUpdateReceiver, packDatosUpdateFilter);
+            registerReceiver(locationUpdateReceiver, locationUpdateFilter);
+        } catch (Exception e) {
+            Log.e("RPAG-Log", Objects.requireNonNull(e.getMessage()));
+        }
     }
 
     String accessToken = "pk.eyJ1Ijoic3BhcnRhbmNhdDciLCJhIjoiY2p2ZzVkOWRrMDQ1ejQxcmc2bjgxc3JtYSJ9.Nn4-Xa4AaeoVe3p3z67I7g";
@@ -117,6 +159,13 @@ public class MainActivity extends AppCompatActivity {
         adminNumEmergencias = new AdminNumEmergencias((AdminNumEmergencias.getSystemCountry(this)));
 
         claseAccidente.name = getResources().getString(R.string.accidente);
+        claseIncendio.name = getResources().getString(R.string.incendio);
+        claseHerido.name = getResources().getString(R.string.herido);
+        claseBloqueo.name = getResources().getString(R.string.bloqueo);
+        claseCongestionamiento.name = getResources().getString(R.string.congestionamiento);
+        claseMarchas.name = getResources().getString(R.string.marchas);
+        claseCalleDanada.name = getResources().getString(R.string.calle_danada);
+        claseCorte.name = getResources().getString(R.string.corte_electrico);
 
         listClasesAlertas.add(claseAccidente);
         listClasesAlertas.add(claseIncendio);
@@ -128,11 +177,12 @@ public class MainActivity extends AppCompatActivity {
         listClasesAlertas.add(claseCorte);
     }
 
-    LocationManager locationManager;
-    LocationListener locationListener;
+    public double locationLatitude, locationLongitude;
 
-    public Location location;
-
+    /**
+     * Antigua inicializacion de LocationManager y LocationListener
+     */
+    /*
     void InitializeLocation() {
         locationListener = new MyLocationListener(this);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -149,34 +199,60 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Localizacion Inicializada", Toast.LENGTH_SHORT).show();
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 100, locationListener);
         }
-
     }
+    */
+
     void GetPermissions(){
+        ArrayList<String> permissionsToGetList = new ArrayList<>();
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-            int requestResponse = 0;
-            ActivityCompat.requestPermissions(
-                    this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    requestResponse);
+            permissionsToGetList.add(Manifest.permission.READ_EXTERNAL_STORAGE);
         }
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            permissionsToGetList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            permissionsToGetList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            permissionsToGetList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+            permissionsToGetList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED){
+            permissionsToGetList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+
+        String[] permissionsToGet = new String[permissionsToGetList.size()];
+        if(permissionsToGetList.size() > 0) {
+            for (int i = 0; i < permissionsToGetList.size(); i++) {
+                permissionsToGet[i] = permissionsToGetList.get(i);
+            }
             int requestResponse = 0;
-            ActivityCompat.requestPermissions(
-                    this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    requestResponse);
+            ActivityCompat.requestPermissions(this, permissionsToGet, requestResponse);
         }
     }
 
+    /**
+     * Falta refinar manejo de permisos...
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if(grantResults.length == 0) {
             Toast.makeText(getApplicationContext(), "PERMISOS DENEGADOS!", Toast.LENGTH_SHORT).show();
-            GetPermissions();
+            finish();
+            System.exit(0);
         }
         else {
-            InitializeLocation();
+            for (String permission : permissions) {
+                if (permission.equals(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    Intent broadcastIntent = new Intent();
+                    broadcastIntent.setAction(BackgroundService.ACTION_LOCATION_PERMISSIONS_GRANTED);
+                    sendBroadcast(broadcastIntent);
+                }
+            }
         }
     }
 
@@ -283,10 +359,7 @@ public class MainActivity extends AppCompatActivity {
                         EnviarNuevaAlerta(claseCorte);
                         break;
                 }
-                Log.v( "RPAG-Log","Envio exitoso");
                 layoutAlertMenu.setVisibility(View.GONE);
-                actualizarListaAlertas();
-                mostrarAlertas();
             }
 
         };
@@ -347,7 +420,7 @@ public class MainActivity extends AppCompatActivity {
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
-            public void onMapReady(@NonNull MapboxMap mapboxMap) {
+            public void onMapReady(@NonNull final MapboxMap mapboxMap) {
                 myMapboxMap = mapboxMap;
                 mapboxMap.setStyle(Style.LIGHT, new Style.OnStyleLoaded() {
                     @Override
@@ -373,17 +446,22 @@ public class MainActivity extends AppCompatActivity {
                                     )
                             );
                         }
+                        style.addImage(myLocationSymbolName,
+                                BitmapFactory.decodeResource(
+                                        getResources(),
+                                        myLocationSymbolDrawable
+                                )
+                        );
 
-                        actualizarListaAlertas();
-                        mostrarAlertas();
+                        mapboxLoaded = true;
+                        Log.i("RPAG-Log", "mapboxLoaded = " + mapboxLoaded);
                     }
                 });
-
             }
         });
     }
 
-    void createAlert(int id, ClaseAlerta clase, double lat, double len, Date fecha) {
+    void createVisibleAlert(int id, ClaseAlerta clase, double lat, double len, Date fecha) {
 
         Float[] offset = {0f, 2.5f};
         Symbol symbol = symbolManager.create(new SymbolOptions()
@@ -396,6 +474,24 @@ public class MainActivity extends AppCompatActivity {
         listAlertasMostradas.add(alerta);
     }
 
+    void updateLocationSymbol() {
+        Log.i("RPAG-Log", "updateLocationSymbol()");
+        if(myLocationSymbol != null) {
+            symbolManager.delete(myLocationSymbol);
+            myLocationSymbol = symbolManager.create(new SymbolOptions()
+                    .withLatLng(new LatLng(locationLatitude, locationLongitude))
+                    .withIconImage(myLocationSymbolName)
+                    .withIconSize(0.05f));
+            Log.i("RPAG-Log", "Updated Self Location Symbol: " + locationLatitude + " - " + locationLongitude);
+        } else {
+            myLocationSymbol = symbolManager.create(new SymbolOptions()
+                    .withLatLng(new LatLng(locationLatitude, locationLongitude))
+                    .withIconImage(myLocationSymbolName)
+                    .withIconSize(0.05f));
+            Log.i("RPAG-Log", "New Self Location Symbol: " + locationLatitude + " - " + locationLongitude);
+        }
+
+    }
 
     Alerta getAlertaBySymbol(Symbol symbol){
         for (int i = 0; i < listAlertasMostradas.size(); i++){
@@ -440,24 +536,24 @@ public class MainActivity extends AppCompatActivity {
 
         imgImagenAlerta.setImageBitmap(null);
         for (int i=0; i<listImagenes.size(); i++){
-            Log.v( "RPAG-Log","Comparando alerta " + alertaSeleccionada.id + " y imagen de " + listImagenes.get(i).id_alerta);
+            Log.i( "RPAG-Log","Comparando alerta " + alertaSeleccionada.id + " y imagen de " + listImagenes.get(i).id_alerta);
             if (listImagenes.get(i).id_alerta == alertaSeleccionada.id){
-                Log.v( "RPAG-Log","Imagen encontrada");
+                Log.i( "RPAG-Log","Imagen encontrada");
 
                 String path = getCacheDir() + "/TempPics";
                 File dir = new File(path);
                 if(dir.mkdirs()){
-                    Log.v( "RPAG-Log","Directorio en cache creado");
+                    Log.i( "RPAG-Log","Directorio en cache creado");
                 }
 
                 File file = new File(path, listImagenes.get(i).nombre);
-                Log.v( "RPAG-Log","Temp file dir: " + file.getAbsolutePath());
+                Log.i( "RPAG-Log","Temp file dir: " + file.getAbsolutePath());
                 try {
                     if(!file.exists()){
                         file.createNewFile();
-                        Log.v( "RPAG-Log","Archivo creado");
+                        Log.i( "RPAG-Log","Archivo creado");
                         FileUtils.writeByteArrayToFile(file,listImagenes.get(i).bitmap);
-                        Log.v( "RPAG-Log","Archivo escrito");
+                        Log.i( "RPAG-Log","Archivo escrito");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -490,6 +586,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        SendPackDatosUpdateRequest();
     }
     private void EnviarNuevoReporte(Alerta alerta) {
         Reporte nuevoReporte = new Reporte();
@@ -503,6 +600,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        SendPackDatosUpdateRequest();
     }
     private void EnviarNuevoComentario(Alerta alerta, String texto) {
         Comentario nuevoComentario = new Comentario();
@@ -517,11 +615,19 @@ public class MainActivity extends AppCompatActivity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        SendPackDatosUpdateRequest();
     }
 
     void EnviarNuevaAlerta(ClaseAlerta claseAlerta) {
 
-        DatosAlerta datosAlerta = new DatosAlerta(0,ID_Usuario,location.getLatitude(),location.getLongitude(),claseAlerta.id,new Date());
+        DatosAlerta datosAlerta = new DatosAlerta(
+                0,
+                ID_Usuario,
+                locationLatitude,
+                locationLongitude,
+                claseAlerta.id,
+                new Date()
+        );
 
         if(chkIncluidePic.isChecked()){
            EnviarNuevaAlertaConImagen(datosAlerta);
@@ -537,27 +643,15 @@ public class MainActivity extends AppCompatActivity {
 
         int numeroEmergencia = adminNumEmergencias.getEmergencyNumber(claseAlerta.id);
         adminNumEmergencias.dialogEmergencyCall(this, numeroEmergencia);
+        SendPackDatosUpdateRequest();
     }
+    void SendPackDatosUpdateRequest() {
+        Log.i( "RPAG-Log","SendPackDatosUpdateRequest()");
 
-    void actualizarListaAlertas() {
-        Log.v( "RPAG-Log","actualizarListaAlertas()");
-        ActualizarAlertas actualizarAlertas = new ActualizarAlertas(IP_SERVIDOR, PORT_SERVIDOR, this);
-        try {
-            actualizarAlertas.join(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        mostrarAlertas();
+        Intent broadcastIntent = new Intent();
+        broadcastIntent.setAction(BackgroundService.ACTION_UPDATE_REQUEST);
+        sendBroadcast(broadcastIntent);
     }
-
-    Handler actualizadorAlertas = new Handler();
-    Runnable actualizacion = new Runnable() {
-        @Override
-        public void run() {
-            actualizarListaAlertas();
-            actualizadorAlertas.postDelayed(this, 30000);
-        }
-    };
 
     void mostrarAlertas() {
         for (int i = 0; i < listAlertasMostradas.size(); i++)
@@ -574,7 +668,7 @@ public class MainActivity extends AppCompatActivity {
             Date fecha = listDatosAlertas.get(i).fecha;
             ClaseAlerta claseAlerta = getClase(listDatosAlertas.get(i).clase_id);
 
-            createAlert(id, claseAlerta, latitud, longitud, fecha);
+            createVisibleAlert(id, claseAlerta, latitud, longitud, fecha);
         }
     }
 
@@ -584,8 +678,8 @@ public class MainActivity extends AppCompatActivity {
 
         datosAlerta_EnvioImagen = datosAlerta;
         claseAlerta_EnvioImagen = getClase(datosAlerta.clase_id);
-        Log.v( "RPAG-Log","datosAlerta.id = " + datosAlerta_EnvioImagen.id);
-        Log.v( "RPAG-Log","claseAlerta.name = " + claseAlerta_EnvioImagen.name);
+        Log.i( "RPAG-Log","datosAlerta.id = " + datosAlerta_EnvioImagen.id);
+        Log.i( "RPAG-Log","claseAlerta.name = " + claseAlerta_EnvioImagen.name);
         if (ActivityCompat.checkSelfPermission(this,Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
         {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
@@ -683,6 +777,7 @@ public class MainActivity extends AppCompatActivity {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            SendPackDatosUpdateRequest();
         }
 
     }
@@ -706,6 +801,46 @@ public class MainActivity extends AppCompatActivity {
         LocaleManager.setNewLocale(this, language);
         Intent intent = context.getIntent();
         startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK));
+    }
+
+
+
+    private class PackDatosUpdateReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.i("RPAG-Log", "PackDatos update received");
+            PackDatos packDatos = (PackDatos) intent.getSerializableExtra(BackgroundService.PACKDATOS_UPDATE_TAGNAME);
+            if (packDatos != null) {
+                listDatosAlertas = packDatos.listaDatosAlertas;
+                listConfirmaciones = packDatos.listaConfirmaciones;
+                listReportes = packDatos.listaReportes;
+                listComentarios = packDatos.listaComentarios;
+                listImagenes = packDatos.listaImagenes;
+
+                if (mapboxLoaded) {
+                    mostrarAlertas();
+                }
+            }
+            else {
+                Log.i("RPAG-Log", "PackDatos is NULL!");
+            }
+        }
+    }
+
+    private class LocationUpdateReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.i("RPAG-Log", "Location update received from Main");
+
+            locationLatitude = intent.getExtras().getDouble(MyLocationListener.LATITUDE_TAGNAME);
+            locationLongitude = intent.getExtras().getDouble(MyLocationListener.LONGITUDE_TAGNAME);
+            if(mapboxLoaded){
+                updateLocationSymbol();
+            }
+
+        }
     }
 
     @Override

@@ -41,9 +41,9 @@ public class EnviarAlerta extends Thread { //DatosAlerta
 
         Socket socket = null;
         try{
-
-            socket = new Socket(main.IP_SERVIDOR, main.PORT_SERVIDOR);
-
+            Log.i( "RPAG-Log","Intentando Conectar con: " + IP);
+            socket = new Socket(IP, PORT);
+            Log.i( "RPAG-Log","Conexion Establecida con " + socket.getRemoteSocketAddress());
 
             in = socket.getInputStream();
             out = socket.getOutputStream();
@@ -54,35 +54,38 @@ public class EnviarAlerta extends Thread { //DatosAlerta
 
             objectOutputStream = new ObjectOutputStream(out);
             //System.out.println("objectOutputStream establecido");
-            Log.v( "RPAG-Log","objectOutputStream establecido");
+            Log.i( "RPAG-Log","objectOutputStream establecido");
             objectInputStream = new ObjectInputStream(in);
             //System.out.println("objectInputStream establecido");
-            Log.v( "RPAG-Log","objectInputStream establecido");
+            Log.i( "RPAG-Log","objectInputStream establecido");
 
             objectOutputStream.writeObject(paquete);
             objectOutputStream.flush();
-            Log.v( "RPAG-Log","Paquete enviado");
+            Log.i( "RPAG-Log","Paquete enviado");
 
             printWriter.close();
             socket.close();
 
         } catch (UnknownHostException e) {
-            Log.v( "RPAG-Log","Unknown host: " + main.IP_SERVIDOR);
+            Log.e( "RPAG-Log","Unknown host: " + MainActivity.IP_SERVIDOR);
             //System.exit(1);
         } catch (ConnectException ce) {
-            Log.v("RPAG-Log","ConnectException: " + ce.getMessage());
+            Log.e("RPAG-Log","ConnectException: " + ce.getMessage());
         } catch (IOException e) {
-            Log.v( "RPAG-Log","No I/O");
+            Log.e( "RPAG-Log","Error: " + e.getMessage());
             //System.exit(1);
         } finally {
             try {
-                in.close();
-                out.close();
-
-                objectInputStream.close();
-                objectOutputStream.close();
-                socket.close();
-                Log.v( "RPAG-Log","Conexion Cerrada");
+                if (socket != null){
+                    if (!socket.isClosed()) {
+                        objectInputStream.close();
+                        objectOutputStream.close();
+                        in.close();
+                        out.close();
+                        socket.close();
+                        Log.i( "RPAG-Log","Conexion Cerrada");
+                    }
+                }
             } catch (IOException ex) {
                 ex.printStackTrace();
             }

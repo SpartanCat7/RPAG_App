@@ -74,13 +74,16 @@ public class EnviarReporte extends Thread {
             //System.exit(1);
         } finally {
             try {
-                in.close();
-                out.close();
-
-                objectInputStream.close();
-                objectOutputStream.close();
-                socket.close();
-                Log.v( "RPAG-Log","Conexion Cerrada");
+                if (socket != null){
+                    if (!socket.isClosed()) {
+                        objectInputStream.close();
+                        objectOutputStream.close();
+                        in.close();
+                        out.close();
+                        socket.close();
+                        Log.i( "RPAG-Log","Conexion Cerrada");
+                    }
+                }
             } catch (ConnectException ce) {
                 Log.v("RPAG-Log","ConnectException: " + ce.getMessage());
             } catch (IOException ex) {

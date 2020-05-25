@@ -1,6 +1,8 @@
 package com.example.rpagv2;
 
-public class ClaseAlerta {
+import java.io.Serializable;
+
+public class ClaseAlerta implements Serializable {
     int id;
     String name, icon_name;
     int icon;
