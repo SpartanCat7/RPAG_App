@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:id="@+id/chkIncluidePicLayout"
+        android:layout_width="400dp"
+        android:layout_height="wrap_content"
+        android:background="@color/colorAccent"
+        android:gravity="center"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <CheckBox
+            android:id="@+id/chkIncluidePic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/incluir_imagen"
+            android:textColor="@color/colorWhite" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/chkIncluidePicLayout">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/btnAccidente"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="@string/accidente"
+                android:drawableStart="@drawable/accident_small"
+                android:paddingHorizontal="15dp"
+                android:textAlignment="viewStart"
+                android:background="@drawable/alert_menu_button"
+                android:textColor="@color/colorWhite" />
+            <Button
+                android:id="@+id/btnIncendio"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="@string/incendio"
+                android:drawableStart="@drawable/fire_small"
+                android:paddingHorizontal="15dp"
+                android:textAlignment="viewStart"
+                android:background="@drawable/alert_menu_button"
+                android:textColor="@color/colorWhite"/>
+            <Button
+                android:id="@+id/btnHerido"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="@string/herido"
+                android:drawableStart="@drawable/wounded_small"
+                android:paddingHorizontal="15dp"
+                android:textAlignment="viewStart"
+                android:background="@drawable/alert_menu_button"
+                android:textColor="@color/colorWhite"/>
+            <Button
+                android:id="@+id/btnBloqueo"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="@string/bloqueo"
+                android:drawableStart="@drawable/blocked_small"
+                android:paddingHorizontal="15dp"
+                android:textAlignment="viewStart"
+                android:background="@drawable/alert_menu_button"
+                android:textColor="@color/colorWhite"/>
+            <Button
+                android:id="@+id/btnCongestionamiento"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="@string/congestionamiento"
+                android:drawableStart="@drawable/traffic_small"
+                android:paddingHorizontal="15dp"
+                android:textAlignment="viewStart"
+                android:background="@drawable/alert_menu_button"
+                android:textColor="@color/colorWhite"/>
+            <Button
+                android:id="@+id/btnMarchas"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="@string/marchas"
+                android:drawableStart="@drawable/marching_small"
+                android:paddingHorizontal="15dp"
+                android:textAlignment="viewStart"
+                android:background="@drawable/alert_menu_button"
+                android:textColor="@color/colorWhite"/>
+            <Button
+                android:id="@+id/btnCalleDanada"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="@string/calle_danada"
+                android:drawableStart="@drawable/street_damage_small"
+                android:paddingHorizontal="15dp"
+                android:textAlignment="viewStart"
+                android:background="@drawable/alert_menu_button"
+                android:textColor="@color/colorWhite"/>
+            <Button
+                android:id="@+id/btnCorte"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="@string/corte_electrico"
+                android:drawableStart="@drawable/power_cut_small"
+                android:paddingHorizontal="15dp"
+                android:textAlignment="viewStart"
+                android:background="@drawable/alert_menu_button"
+                android:textColor="@color/colorWhite"/>
+        </LinearLayout>
+
+    </ScrollView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

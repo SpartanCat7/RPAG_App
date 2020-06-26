@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/btnLenguages"
+        android:title="@string/languages">
+        <menu>
+            <item
+                android:id="@+id/btnAutomaticLang"
+                android:title="@string/automatic"/>
+            <item
+                android:id="@+id/btnSpanish"
+                android:title="@string/spanish"/>
+            <item
+                android:id="@+id/btnEnglish"
+                android:title="@string/english"/>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/btnLoginOption"
+        android:title="@string/log_in"/>
+    <item
+        android:id="@+id/btnRegisterOption"
+        android:title="@string/register"/>
+    <item
+        android:id="@+id/btnAbout"
+        android:title="@string/about_this_app"/>
+    <item
+        android:id="@+id/btnLogOut"
+        android:title="@string/log_out" />
+
+</menu>

@@ -33,7 +33,7 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:padding="5dp"
-                android:src="@drawable/frontal_crash"/>
+                android:src="@drawable/accident"/>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -75,7 +75,7 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:padding="5dp"
-                android:src="@drawable/band_aid"/>
+                android:src="@drawable/wounded"/>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -96,7 +96,7 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:padding="5dp"
-                android:src="@drawable/road_blockade"/>
+                android:src="@drawable/blocked"/>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -117,7 +117,7 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:padding="5dp"
-                android:src="@drawable/traffic_jam"/>
+                android:src="@drawable/traffic"/>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -138,7 +138,7 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:padding="5dp"
-                android:src="@drawable/parade"/>
+                android:src="@drawable/marching"/>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -159,7 +159,7 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:padding="5dp"
-                android:src="@drawable/road"/>
+                android:src="@drawable/street_damage"/>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -180,7 +180,7 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:padding="5dp"
-                android:src="@drawable/flash"/>
+                android:src="@drawable/power_cut"/>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
