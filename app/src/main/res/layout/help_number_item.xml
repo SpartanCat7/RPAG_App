@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="15dp"
+    android:background="@color/dark"
+    android:gravity="center_vertical"
+    android:layout_marginTop="5dp">
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="5"
+        android:orientation="vertical"
+        android:gravity="center">
+        <ImageView
+            android:id="@+id/imgHelpNumberIcon"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:src="@drawable/abc_vector_test"
+            android:layout_marginBottom="5dp"/>
+        <TextView
+            android:id="@+id/txtHelpNumberLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorWhite"
+            android:text="Number label"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="2dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/border"/>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="5"
+        android:orientation="vertical"
+        android:gravity="center">
+        <TextView
+            android:id="@+id/txtHelpNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorWhite"
+            android:text="911"/>
+    </LinearLayout>
+
+</LinearLayout>

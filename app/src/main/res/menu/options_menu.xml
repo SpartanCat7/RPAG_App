@@ -18,6 +18,9 @@
         </menu>
     </item>
     <item
+        android:id="@+id/btnHelpNumbers"
+        android:title="@string/local_help_numbers"/>
+    <item
         android:id="@+id/btnLoginOption"
         android:title="@string/log_in"/>
     <item

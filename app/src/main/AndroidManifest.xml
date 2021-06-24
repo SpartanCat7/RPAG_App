@@ -12,7 +12,6 @@
         android:name="android.permission.CAMERA"
         android:required="false" />
 
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -20,9 +19,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="edu.integrator.rpagv2.About"></activity>
-        <activity android:name="edu.integrator.rpagv2.Onboarding"
-            android:theme="@style/Theme.AppCompat.NoActionBar"/>
+        <activity android:name="edu.integrator.rpagv2.HelpNumbersActivity"/>
+        <activity android:name="edu.integrator.rpagv2.CommentActivity" />
+        <activity android:name="edu.integrator.rpagv2.About" />
+        <activity
+            android:name="edu.integrator.rpagv2.Onboarding"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity android:name="edu.integrator.rpagv2.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,6 +32,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="edu.integrator.rpagv2.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <service android:name="edu.integrator.rpagv2.BackgroundService" />
     </application>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    tools:context="edu.integrator.rpagv2.CommentActivity"
+    android:background="@color/darker">
+
+    <TextView
+        android:id="@+id/txtCommentsActivityTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Alert Comments"
+        app:layout_constraintTop_toTopOf="parent"
+        android:textColor="@color/colorWhite"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/commentsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/txtCommentsActivityTitle"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="10dp" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

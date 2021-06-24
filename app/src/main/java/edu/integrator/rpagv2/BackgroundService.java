@@ -9,9 +9,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
-import android.os.Handler;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
@@ -20,32 +22,32 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.ConnectException;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import com.firebase.geofire.GeoFireUtils;
+import com.firebase.geofire.GeoLocation;
+import com.firebase.geofire.GeoQueryBounds;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.QuerySnapshot;
+
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import edu.integrator.rpagv2.Models.AlertData;
+import edu.integrator.rpagv2.Providers.AlertProvider;
+
 
 public class BackgroundService extends Service {
 
-    final static String ACTION_PACKDATOS_RESPONSE = "ACTION_PACKDATOS_RESPONSE";
-    final static String PACKDATOS_UPDATE_TAGNAME = "PACKDATOS_UPDATE_TAGNAME";
+    final static String ACTION_LISTALERTAS_UPDATE = "ACTION_LISTALERTAS_UPDATE";
+    final static String LISTALERTAS_UPDATE_TAGNAME = "LISTALERTAS_UPDATE_TAGNAME";
 
-    final static String ACTION_UPDATE_REQUEST = "ACTION_UPDATE_REQUEST";
     final static String ACTION_LOCATION_PERMISSIONS_GRANTED = "ACTION_UPDATE_REQUEST";
 
     NotificationManager notificationManager;
-    ArrayList<Integer> alreadyNotifiedAlarms = new ArrayList<>();
-
-    final static ClaseAlerta[] listClasesAlertas = MainActivity.listClasesAlertas;
+    ArrayList<String> alreadyNotifiedAlarms = new ArrayList<>();
 
     @Nullable
     @Override
@@ -53,31 +55,33 @@ public class BackgroundService extends Service {
         return null;
     }
 
-    String IP_SERVIDOR = "192.168.137.1";
-    int PORT_SERVIDOR = 6809;
     final static String CHANNEL_ID = "RPAG_CHANNEL_ID";
 
-    PackDatos packDatos;
+    private ArrayList<AlertData> alertDataList;
 
     LocationManager locationManager;
     MyLocationListener locationListener;
+    ArrayList<ListenerRegistration> alertListenerRegistrationList;
+    ArrayList<QuerySnapshot> alertQuerySnapshotsList;
 
-    UpdateRequestReceiver updateRequestReceiver;
     LocationPermissionGrantedReceiver locationPermissionGrantedReceiver;
+
+    AlertProvider mAlertProvider;
+
+    private final double MIN_DELTA_FOR_UPDATE = 2 * 1000;
+    GeoLocation lastUsedLocation;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.i("RPAG-Log", "Background Service Initialized");
+        Log.i(MainActivity.LOG_TAG, "Background Service Initialized");
 
         nextNotifID = 1000;
-        IP_SERVIDOR = MainActivity.IP_SERVIDOR;
-        PORT_SERVIDOR = MainActivity.PORT_SERVIDOR;
-        Log.i("RPAG-Log", "Server data updated: " + IP_SERVIDOR + ":" + PORT_SERVIDOR);
         RegisterBroadcastReceivers();
         createNotificationChannel();
+        mAlertProvider = new AlertProvider();
+        alertListenerRegistrationList = new ArrayList<>();
         InitializeLocation();
-        actualizacion.run();
     }
 
     @Override
@@ -87,159 +91,25 @@ public class BackgroundService extends Service {
     }
 
     void RegisterBroadcastReceivers() {
-        IntentFilter updateRequestFilter = new IntentFilter(ACTION_UPDATE_REQUEST);
-        updateRequestFilter.addCategory(Intent.CATEGORY_DEFAULT);
-        updateRequestReceiver = new UpdateRequestReceiver();
 
         IntentFilter locationPermissionGrantedFilter = new IntentFilter(ACTION_LOCATION_PERMISSIONS_GRANTED);
         locationPermissionGrantedFilter.addCategory(Intent.CATEGORY_DEFAULT);
         locationPermissionGrantedReceiver = new LocationPermissionGrantedReceiver();
 
-
-
         try {
-            registerReceiver(updateRequestReceiver, updateRequestFilter);
             registerReceiver(locationPermissionGrantedReceiver, locationPermissionGrantedFilter);
         } catch (Exception e) {
-            Log.e("RPAG-Log", Objects.requireNonNull(e.getMessage()));
+            Log.e(MainActivity.LOG_TAG, Objects.requireNonNull(e.getMessage()));
         }
 
     }
 
-    Handler actualizadorAlertas = new Handler();
-    Runnable actualizacion = new Runnable() {
-        @Override
-        public void run() {
-            actualizadorAlertas.postDelayed(this, 60000);
-            actualizarListaAlertas(true, true);
-            //Now performed at the end of the thread itself
-            /*
-            NotifyNearbyAlerts(.5,.5);
-            enviarListaAlertas(packDatos);
-            */
-        }
-    };
-
-    void enviarListaAlertas(PackDatos pack) {
+    void sendAlertList(ArrayList<AlertData> alertList) {
         Log.i(MainActivity.LOG_TAG, "enviarListaAlertas()");
         Intent broadcastIntent = new Intent();
-        broadcastIntent.setAction(ACTION_PACKDATOS_RESPONSE);
-        broadcastIntent.putExtra(PACKDATOS_UPDATE_TAGNAME, pack);
+        broadcastIntent.setAction(ACTION_LISTALERTAS_UPDATE);
+        broadcastIntent.putExtra(LISTALERTAS_UPDATE_TAGNAME, alertList);
         sendBroadcast(broadcastIntent);
-    }
-
-    void actualizarListaAlertas(final boolean notifyNearbyAlerts, final boolean sendAlertsToMainActivity) {
-        Log.i("RPAG-Log", "actualizarListaAlertas()");
-
-        Thread actualizarListas = new Thread() {
-
-            InputStream in = null;
-            OutputStream out = null;
-            ObjectInputStream objectInputStream;
-            ObjectOutputStream objectOutputStream;
-            PrintWriter printWriter;
-
-            boolean success = false;
-
-            @Override
-            public void run() {
-                Socket socket = null;
-                PackDatos packDatosServer = null;
-                try {
-                    Log.i("RPAG-Log", "Actualizando Alertas");
-
-                    socket = new Socket(IP_SERVIDOR, PORT_SERVIDOR);
-                    Log.i("RPAG-Log", "Conexion establecida");
-                    in = socket.getInputStream();
-                    out = socket.getOutputStream();
-
-                    printWriter = new PrintWriter(socket.getOutputStream(), true);
-
-                    printWriter.println("Actualizar");
-                    Log.i("RPAG-Log", "Mensaje Enviado");
-
-                    objectOutputStream = new ObjectOutputStream(out);
-                    Log.i("RPAG-Log", "objectOutputStream establecido");
-                    objectInputStream = new ObjectInputStream(in);
-                    Log.i("RPAG-Log", "objectInputStream establecido");
-
-                    Log.i("RPAG-Log", "Esperando Respuesta...");
-
-                    packDatosServer = (PackDatos) objectInputStream.readObject();
-                    Log.i("RPAG-Log", "Objeto Recibido...");
-
-                    if (packDatosServer != null) {
-                        success = true;
-                        packDatos = packDatosServer;
-                        Log.i("RPAG-Log", "----- Lista Recuperada -----");
-                        Log.i("RPAG-Log", "Alertas: " + packDatos.listaDatosAlertas.size());
-                        Log.i("RPAG-Log", "Confirmaciones: " + packDatos.listaConfirmaciones.size());
-                        Log.i("RPAG-Log", "Reportes: " + packDatos.listaReportes.size());
-                        Log.i("RPAG-Log", "Comentarios: " + packDatos.listaComentarios.size());
-                        Log.i("RPAG-Log", "Imagenes: " + packDatos.listaImagenes.size());
-                    }
-
-
-                } catch (UnknownHostException e) {
-                    Log.e("RPAG-Log", "Unknown host: " + IP_SERVIDOR);
-                } catch (ConnectException ce) {
-                    Log.e("RPAG-Log", "ConnectException: " + ce.getMessage());
-                } catch (IOException | ClassNotFoundException ex) {
-                    Logger.getLogger(BackgroundService.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
-                } finally {
-                    try {
-                        if (packDatosServer != null) {
-                            if (notifyNearbyAlerts) {
-                                BackgroundService.this.NotifyNearbyAlerts(.5, .5);
-                            }
-                            if (sendAlertsToMainActivity) {
-                                enviarListaAlertas(packDatosServer);
-                            }
-                        }
-                        if (socket != null) {
-                            if (!socket.isClosed()) {
-                                printWriter.close();
-                                objectInputStream.close();
-                                objectOutputStream.close();
-                                in.close();
-                                out.close();
-                                socket.close();
-                            }
-                        }
-
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    } catch (Exception e) {
-                        Log.e("RPAG-Log", "Exception: " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
-
-        actualizarListas.start();
-        /*
-        try {
-            actualizarListas.join(10000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        */
-    }
-
-
-
-    private class UpdateRequestReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.i("RPAG-Log", "UpdateRequestReceiver()");
-            actualizarListaAlertas(false, true);
-            //Now performed at the end of the thread itself
-            /*
-            enviarListaAlertas(packDatos);
-             */
-        }
     }
 
     void InitializeLocation() {
@@ -248,9 +118,7 @@ public class BackgroundService extends Service {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(getApplicationContext(), "Permisos no concedidos", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        else {
+        } else {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 100, locationListener);
         }
     }
@@ -261,6 +129,102 @@ public class BackgroundService extends Service {
         public void onReceive(Context context, Intent intent) {
             Log.i("RPAG-Log", "LocationPermissionGrantedReceiver Activated");
             InitializeLocation();
+        }
+    }
+
+    public class MyLocationListener implements LocationListener {
+
+        public Location location;
+        final static String ACTION_LOCATION_UPDATE = "ACTION_LOCATION_UPDATE";
+        final static String LATITUDE_TAGNAME = "LATITUDE_TAGNAME";
+        final static String LONGITUDE_TAGNAME = "LONGITUDE_TAGNAME";
+
+        @Override
+        public void onLocationChanged(final Location location) {
+            Toast.makeText(getApplicationContext(), "Localizacion actualizada", Toast.LENGTH_SHORT).show();
+            Log.i("RPAG-Log", "Location Updated: " + location.getLongitude() + " - " + location.getLatitude());
+            this.location = location;
+
+            GeoLocation currentLocation = new GeoLocation(location.getLatitude(), location.getLongitude());
+
+            if (lastUsedLocation == null || GeoFireUtils.getDistanceBetween(lastUsedLocation, currentLocation) >= MIN_DELTA_FOR_UPDATE) {
+                Log.d(MainActivity.LOG_TAG, "Enough movement delta. Updating listeners.");
+
+                for (ListenerRegistration listenerRegistration : alertListenerRegistrationList) {
+                    listenerRegistration.remove();
+                }
+                alertListenerRegistrationList = new ArrayList<>();
+                alertQuerySnapshotsList = new ArrayList<>();
+
+                final GeoLocation center = new GeoLocation(location.getLatitude(), location.getLongitude());
+                final double radiusInM = 5 * 1000;
+
+                final List<GeoQueryBounds> boundsList = GeoFireUtils.getGeoHashQueryBounds(center, radiusInM);
+                for (final GeoQueryBounds bounds : boundsList) {
+                    ListenerRegistration newListener = mAlertProvider.getAlertsByGeohashBounds(bounds).addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        int resultsIndex = -1;
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                            Log.d(MainActivity.LOG_TAG, "Response from listener " + boundsList.indexOf(bounds));
+
+                            if (resultsIndex == -1) {
+                                alertQuerySnapshotsList.add(value);
+                                resultsIndex = alertQuerySnapshotsList.indexOf(value);
+                            } else {
+                                alertQuerySnapshotsList.set(resultsIndex, value);
+                            }
+
+                            if (alertQuerySnapshotsList.size() == boundsList.size()) { //This condition would mean all listeners have deposited their results by now
+
+                                alertDataList = new ArrayList<>();
+
+                                for (QuerySnapshot snap : alertQuerySnapshotsList) {
+                                    if (snap != null) {
+                                        for (DocumentSnapshot doc : snap.getDocuments()) {
+                                            AlertData alertData = doc.toObject(AlertData.class);
+
+                                            GeoLocation alertLocation = new GeoLocation(alertData.getLatitude(), alertData.getLongitude());
+
+                                            if (GeoFireUtils.getDistanceBetween(alertLocation, lastUsedLocation) <= radiusInM) {
+                                                BackgroundService.this.alertDataList.add(doc.toObject(AlertData.class));
+                                            }
+                                        }
+                                    }
+                                }
+
+                                sendAlertList(alertDataList);
+                                NotifyNearbyAlerts();
+                            }
+                        }
+                    });
+                    alertListenerRegistrationList.add(newListener);
+                }
+
+                lastUsedLocation = currentLocation;
+            }
+
+            Intent locationUpdateBroadcastIntent = new Intent();
+            locationUpdateBroadcastIntent.setAction(ACTION_LOCATION_UPDATE);
+            locationUpdateBroadcastIntent.putExtra(LATITUDE_TAGNAME, location.getLatitude());
+            locationUpdateBroadcastIntent.putExtra(LONGITUDE_TAGNAME, location.getLongitude());
+            getApplicationContext().sendBroadcast(locationUpdateBroadcastIntent);
+            Log.i(MainActivity.LOG_TAG, "Location Broadcast Sent");
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+            Toast.makeText( getApplicationContext(), "GPS is Enabled", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+            Toast.makeText( getApplicationContext(), "GPS is Disabled.Please enable GPS", Toast.LENGTH_SHORT ).show();
+            location = null;
         }
     }
 
@@ -280,58 +244,29 @@ public class BackgroundService extends Service {
         }
     }
 
-    void NotifyNearbyAlerts(double maxLatitudeDelta, double maxLongitudeDelta) {
-        Log.i("RPAG-Log", "NotifyNearbyAlerts()");
+    void NotifyNearbyAlerts() {
+        Log.i(MainActivity.LOG_TAG, "NotifyNearbyAlerts()");
 
-        if(packDatos != null && locationListener.location != null) {
-            double latitude = locationListener.location.getLatitude();
-            double longitude = locationListener.location.getLongitude();
-
-            for (int i = 0; i < packDatos.listaDatosAlertas.size(); i++) {
-                if(!alreadyNotifiedAlarms.contains(packDatos.listaDatosAlertas.get(i).id)){
-                    if(isAlertNear(latitude, longitude, packDatos.listaDatosAlertas.get(i), maxLatitudeDelta, maxLongitudeDelta)){
-                        Log.i("RPAG-Log", "Alert " + packDatos.listaDatosAlertas.get(i).id + " Notifying");
-                        NotifyAlert(packDatos.listaDatosAlertas.get(i));
-                        alreadyNotifiedAlarms.add(packDatos.listaDatosAlertas.get(i).id);
-                    } else {
-                        Log.i("RPAG-Log", "Alert " + packDatos.listaDatosAlertas.get(i).id + "not near");
-                    }
+        if(alertDataList != null && locationListener.location != null) {
+            for (int i = 0; i < alertDataList.size(); i++) {
+                if(!alreadyNotifiedAlarms.contains(alertDataList.get(i).getId())){
+                    Log.i(MainActivity.LOG_TAG, "Alert " + alertDataList.get(i).getId() + " Notifying");
+                    NotifyAlert(alertDataList.get(i));
+                    alreadyNotifiedAlarms.add(alertDataList.get(i).getId());
                 } else {
-                    Log.i("RPAG-Log", "Alert " + packDatos.listaDatosAlertas.get(i).id + " already notified");
+                    Log.i(MainActivity.LOG_TAG, "Alert " + alertDataList.get(i).getId() + " already notified");
                 }
             }
         }
     }
 
-
-    private void NotifyAlert(DatosAlerta alerta) {
+    private void NotifyAlert(AlertData alerta) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(getClase(alerta.clase_id).icon)
+                .setSmallIcon(MainActivity.getClass(alerta.getClassId()).icon)
                 .setContentTitle("Alerta cercana")
-                .setContentText("Una alerta de " + getString(getClase(alerta.clase_id).name_string_ID) + " ha sido enviada cerca de usted")
+                .setContentText("Una alerta de " + getString(MainActivity.getClass(alerta.getClassId()).name_string_ID) + " ha sido enviada cerca de usted")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
         notificationManager.notify(getNewNotificationID(), builder.build());
-    }
-
-    ClaseAlerta getClase(int clase_id) {
-        for (int i = 0; i < listClasesAlertas.length; i++) {
-            if (clase_id == listClasesAlertas[i].id) {
-                return listClasesAlertas[i];
-            }
-        }
-        return null;
-    }
-
-    boolean isAlertNear(double latitude, double longitude, DatosAlerta alerta , double maxLatitudeDelta, double maxLongitudeDelta) {
-        if (alerta.latitud < latitude + maxLatitudeDelta && alerta.latitud > latitude - maxLatitudeDelta){
-            if (alerta.longitud < longitude + maxLongitudeDelta && alerta.longitud > longitude - maxLongitudeDelta) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
     }
 
     int nextNotifID = 1000;
