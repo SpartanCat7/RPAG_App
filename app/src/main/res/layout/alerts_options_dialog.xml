@@ -14,8 +14,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:paddingHorizontal="20dp"
-        android:paddingVertical="10dp">
+        android:paddingHorizontal="30dp"
+        android:paddingVertical="20dp">
 
         <TextView
             android:id="@+id/txtAlertOptionsTitle"
@@ -39,71 +39,126 @@
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <LinearLayout
-        android:id="@+id/layoutAlertOptionsData"
-        android:layout_width="0dp"
+    <mobi.gspd.segmentedbarview.SegmentedBarView
+        android:id="@+id/alertOptionsTrueFalseBar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/layoutAlertOptionsHeader"
+        android:padding="3dp"
+        android:layout_marginHorizontal="20dp"
+        app:sbv_empty_segment_text="No votes"
+        app:sbv_segment_gap_width="10dp"
+        app:sbv_segment_text_size="20sp"
+        app:sbv_show_description_text="false"
+        app:sbv_side_style="angle"
+        app:sbv_side_text_style="twoSided"
+        app:sbv_value_sign_height="30dp"
+        app:sbv_value_sign_round="8dp"
+        app:sbv_value_sign_width="30dp" />
+
+    <TableLayout
+        android:id="@+id/layoutAlertOptionsData"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/alertOptionsTrueFalseBar"
         android:paddingHorizontal="20dp"
-        android:paddingVertical="10dp">
-        <LinearLayout
-            android:id="@+id/layoutAlertOptionsConfirmations"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+        android:paddingVertical="10dp"
+        android:stretchColumns="1">
+        <TableRow android:paddingVertical="4dp">
+            <TextView
+                android:layout_weight="0"
+                android:id="@+id/txtAlertOptionsAddressLabel"
+                android:paddingRight="20dp"
+                android:text="@string/address"
+                android:textColor="@color/colorWhite"/>
+            <TextView
+                android:id="@+id/txtAlertOptionsAddressData"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="\?"
+                android:minLines="1"
+                android:maxLines="3"
+                android:textColor="@color/colorWhite"
+                android:background="@color/darker"/>
+
+        </TableRow>
+        <TableRow android:paddingVertical="4dp">
+            <TextView
+                android:layout_weight="0"
+                android:id="@+id/txtAlertOptionsDateLabel"
+                android:paddingRight="20dp"
+                android:text="@string/date"
+                android:textColor="@color/colorWhite"/>
+            <TextView
+                android:id="@+id/txtAlertOptionsDateData"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="\?"
+                android:minLines="1"
+                android:maxLines="3"
+                android:textColor="@color/colorWhite"
+                android:background="@color/darker"/>
+
+        </TableRow>
+        <TableRow android:paddingVertical="4dp">
             <TextView
                 android:id="@+id/txtAlertOptionsConfirmationsLabel"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:paddingRight="20dp"
                 android:text="@string/confirmaciones"
                 android:textColor="@color/colorWhite"/>
             <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
                 android:id="@+id/txtAlertOptionsConfirmationsData"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="30"
-                android:textColor="@color/colorGreen"/>
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/layoutAlertOptionsReports"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+                android:gravity="center"
+                android:text="0"
+                android:textColor="@color/colorGreen"
+                android:background="@color/darker"/>
+        </TableRow>
+        <TableRow android:paddingVertical="4dp">
             <TextView
                 android:id="@+id/txtAlertOptionsReportsLabel"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:text="Reports"
+                android:layout_weight="0"
+                android:paddingRight="20dp"
+                android:text="@string/reports"
                 android:textColor="@color/colorWhite"/>
             <TextView
                 android:id="@+id/txtAlertOptionsReportsData"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="20"
-                android:textColor="@color/colorRed"/>
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/layoutAlertOptionsCoordinates"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="0"
+                android:textColor="@color/colorRed"
+                android:background="@color/darker"/>
+        </TableRow>
+        <!--
+        <TableRow android:paddingVertical="4dp">
             <TextView
                 android:id="@+id/txtAlertOptionsCoordinatesLabel"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:paddingRight="20dp"
                 android:text="@string/coordinates"
                 android:textColor="@color/colorWhite"/>
             <TextView
                 android:id="@+id/txtAlertOptionsCoordinatesData"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="17.25 / -12.532"
-                android:textColor="@color/colorWhite"/>
-        </LinearLayout>
-    </LinearLayout>
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="\? / \?"
+                android:textColor="@color/colorWhite"
+                android:background="@color/darker"/>
+
+        </TableRow>
+        -->
+    </TableLayout>
+
     <LinearLayout
         android:id="@+id/layoutAlertOptionsVote"
         android:layout_width="0dp"

@@ -15,6 +15,7 @@ public class UIAlert {
         this.id = id;
         this.lat = lat;
         this.len = len;
+        this.date = date;
         this.symbol = symbol;
         this.alertClass = alertClass;
     }
@@ -23,6 +24,7 @@ public class UIAlert {
         this.id = id;
         this.lat = lat;
         this.len = len;
+        this.date = date;
         this.alertClass = alertClass;
     }
 }

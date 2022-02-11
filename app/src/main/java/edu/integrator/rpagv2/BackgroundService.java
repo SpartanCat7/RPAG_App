@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -15,6 +16,7 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -32,6 +34,7 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -56,6 +59,7 @@ public class BackgroundService extends Service {
     }
 
     final static String CHANNEL_ID = "RPAG_CHANNEL_ID";
+    final static String LAST_CHECK_TIME_KEY = "LAST_CHECK_TIME_KEY";
 
     private ArrayList<AlertData> alertDataList;
 
@@ -249,7 +253,8 @@ public class BackgroundService extends Service {
 
         if(alertDataList != null && locationListener.location != null) {
             for (int i = 0; i < alertDataList.size(); i++) {
-                if(!alreadyNotifiedAlarms.contains(alertDataList.get(i).getId())){
+                //if(!alreadyNotifiedAlarms.contains(alertDataList.get(i).getId())){
+                if(alertShouldBeNotified(alertDataList.get(i))){
                     Log.i(MainActivity.LOG_TAG, "Alert " + alertDataList.get(i).getId() + " Notifying");
                     NotifyAlert(alertDataList.get(i));
                     alreadyNotifiedAlarms.add(alertDataList.get(i).getId());
@@ -257,7 +262,19 @@ public class BackgroundService extends Service {
                     Log.i(MainActivity.LOG_TAG, "Alert " + alertDataList.get(i).getId() + " already notified");
                 }
             }
+
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+            sharedPref.edit().putString(LAST_CHECK_TIME_KEY, Long.toString(new Date().getTime())).apply();
+
         }
+    }
+
+    private boolean alertShouldBeNotified(AlertData alertData) {
+        String lastCheck = PreferenceManager.getDefaultSharedPreferences(this).getString(LAST_CHECK_TIME_KEY, Long.toString(new Date().getTime() - 3600 * 1000));
+        if (alertData.getDate().getTime() >= Long.parseLong(lastCheck))
+            return true;
+
+        return false;
     }
 
     private void NotifyAlert(AlertData alerta) {

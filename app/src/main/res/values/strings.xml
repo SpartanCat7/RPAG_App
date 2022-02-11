@@ -3,8 +3,8 @@
     <string name="btnAlertMenuText">!</string>
     <string name="placeholderText">Placeholder</string>
     <string name="alert_options_title">Alert Options</string>
-    <string name="btn_confirmar_alerta">Confirm</string>
-    <string name="btn_reportar">Report</string>
+    <string name="btn_confirmar_alerta">True</string>
+    <string name="btn_reportar">False</string>
     <string name="comment_hint">Something to comment?</string>
     <string name="btnComentar_enviar"><![CDATA[>>]]></string>
     <string name="txt_comentarios_placeholder">Comments</string>
@@ -25,13 +25,18 @@
     <string name="register">Register</string>
     <string name="password">Password</string>
     <string name="password_error">Please enter your password</string>
+    <string name="username">Username</string>
+    <string name="username_error">Invalid username</string>
     <string name="email">Email</string>
     <string name="email_error">Invalid email</string>
     <string name="login">Login</string>
-    <string name="confirmaciones">Confirmations</string>
+    <string name="address">Address</string>
+    <string name="confirmaciones">Votes T</string>
+    <string name="reports">Votes F</string>
     <string name="sendComment"><![CDATA[> >]]></string>
     <string name="comments">Comments</string>
     <string name="coordinates">Coordinates</string>
+    <string name="date">Date</string>
     <string name="back">Back</string>
     <string name="next">Next</string>
     <string name="welcome">Welcome</string>
@@ -51,5 +56,7 @@
     <string name="local_help_numbers">Local help numbers</string>
     <string name="police">Police</string>
     <string name="firefighters">Firefighters</string>
+    <string name="paramedics">Paramedics</string>
     <string name="unknown">Unknown</string>
+    <string name="mapbox_access_token">pk.eyJ1Ijoic3BhcnRhbmNhdDciLCJhIjoiY2p2ZzVkOWRrMDQ1ejQxcmc2bjgxc3JtYSJ9.Nn4-Xa4AaeoVe3p3z67I7g</string>
 </resources>

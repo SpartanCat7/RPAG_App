@@ -20,8 +20,8 @@ public class RegisterDialog extends DialogFragment {
 
     RegisterDialogInterface registerDialogInterface;
 
-    EditText emailField, passwordField;
-    TextView emailError, passwordError;
+    EditText usernameField, emailField, passwordField;
+    TextView usernameError, emailError, passwordError;
     Button btnRegister;
 
     @Nullable
@@ -34,22 +34,50 @@ public class RegisterDialog extends DialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        usernameField =     view.findViewById(R.id.register_username_field);
         emailField =        view.findViewById(R.id.register_email_field);
         passwordField =     view.findViewById(R.id.register_password_field);
+        usernameError =     view.findViewById(R.id.register_username_error);
         emailError =        view.findViewById(R.id.register_email_error);
         passwordError =     view.findViewById(R.id.register_password_error);
         btnRegister =       view.findViewById(R.id.btnRegister);
 
+        usernameError.setVisibility(View.GONE);
         emailError.setVisibility(View.GONE);
         passwordError.setVisibility(View.GONE);
 
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                registerDialogInterface.registerButtonClicked(
-                        emailField.getText().toString(),
-                        passwordField.getText().toString(),
-                        RegisterDialog.this);
+                String username = usernameField.getText().toString().trim();
+                boolean usernamePass = false;
+                if (username.length() >= 0) {
+                    usernamePass = true;
+                    emailError.setVisibility(View.GONE);
+                } else {
+                    usernameError.setVisibility(View.VISIBLE);
+                }
+
+                String email = emailField.getText().toString().trim();
+                boolean emailPass = false;
+                if (email.length() >= 0) {
+                    emailPass = true;
+                    emailError.setVisibility(View.GONE);
+                } else {
+                    usernameError.setVisibility(View.VISIBLE);
+                }
+
+                String password = passwordField.getText().toString().trim();
+                boolean passwordPass = false;
+                if (password.length() >= 0) {
+                    passwordPass = true;
+                    passwordError.setVisibility(View.GONE);
+                } else {
+                    usernameError.setVisibility(View.VISIBLE);
+                }
+
+                if (usernamePass && emailPass && passwordPass)
+                    registerDialogInterface.registerButtonClicked(username, email, password, RegisterDialog.this);
             }
         });
     }
@@ -70,6 +98,6 @@ public class RegisterDialog extends DialogFragment {
     }
 
     public interface RegisterDialogInterface {
-        void registerButtonClicked(String email, String password, RegisterDialog dialog);
+        void registerButtonClicked(String username, String email, String password, RegisterDialog dialog);
     }
 }

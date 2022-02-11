@@ -2,9 +2,11 @@ package edu.integrator.rpagv2;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -111,9 +113,14 @@ public class HelpNumbersActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull HelpNumbersActivity.ViewHolder holder, int position) {
+            //Integer classNameId = helpNumberList.get(position).getClassNameId();
+            //String number = helpNumberList.get(position).getNumber();
+            Drawable classIcon = ContextCompat.getDrawable(getApplicationContext(), helpNumberList.get(position).getClassIconId());
+
             holder.getTxtHelpNumberLabel().setText(helpNumberList.get(position).getClassNameId());
             holder.getTxtHelpNumber().setText(helpNumberList.get(position).getNumber());
-            holder.getImgHelpServiceIcon().setImageDrawable(getDrawable(helpNumberList.get(position).getClassIconId()));
+            if (classIcon != null)
+                holder.getImgHelpServiceIcon().setImageDrawable(classIcon);
         }
 
         @Override

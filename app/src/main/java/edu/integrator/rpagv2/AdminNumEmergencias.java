@@ -13,11 +13,24 @@ import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.integrator.rpagv2.R;
+
+import java.util.ArrayList;
+
+import edu.integrator.rpagv2.Models.AlertClass;
+import edu.integrator.rpagv2.Models.HelpNumber;
+import edu.integrator.rpagv2.Providers.CountryProvider;
 
 
 public class AdminNumEmergencias {
 
+    CountryProvider mCountryProvider;
+    public ArrayList<HelpNumber> localNumbersList = new ArrayList<>();
+
+    /*
     private int numAccident = 911;
     private int numIncendio = 911;
     private int numHerido = 911;
@@ -26,15 +39,32 @@ public class AdminNumEmergencias {
     private int numMarchas = 911;
     private int numCalleDanada = 911;
     private int numCorte = 911;
+    */
 
-
-    private String country;
+    //private String country;
 
     public AdminNumEmergencias(String country) {
-        this.country = country;
-        configLocalNumbers();
+        //this.country = country;
+
+        mCountryProvider = new CountryProvider();
+        mCountryProvider.getCountryNumbers(country).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                for (DocumentSnapshot number : queryDocumentSnapshots.getDocuments()) {
+                    HelpNumber newHelpNumber = new HelpNumber();
+                    newHelpNumber.setClassCode(number.getId());
+                    newHelpNumber.setCountryCode(country);
+                    newHelpNumber.setNumber((String) number.get("telfNumber"));
+
+                    localNumbersList.add(newHelpNumber);
+                }
+            }
+        });
+
+        //configLocalNumbers();
     }
 
+    /*
     public int getEmergencyNumber(int emergency_id) {
         int number = 911;
         switch (emergency_id) {
@@ -66,7 +96,19 @@ public class AdminNumEmergencias {
 
         return number;
     }
+    */
 
+    public String getEmergencyNumber(AlertClass alertClass) {
+        String numberToReturn = null;
+        for (HelpNumber helpNumber : localNumbersList) {
+            if (alertClass.help_service.equals(helpNumber.getClassCode())) {
+                numberToReturn = helpNumber.getNumber();
+            }
+        }
+        return numberToReturn;
+    }
+
+    /*
     void configLocalNumbers() {
         switch (country) {
             case "us":
@@ -78,6 +120,7 @@ public class AdminNumEmergencias {
                 break;
         }
     }
+    */
 
     static String getSystemCountry(Context context) {
         TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
@@ -87,10 +130,11 @@ public class AdminNumEmergencias {
         if (tm != null) {
             country = tm.getSimCountryIso();
         }
-        return country;
+        //return country;
+        return "bo";
     }
 
-    void callEmergencyNumber(Context context, int number) {
+    void callEmergencyNumber(Context context, String number) {
         try {
             Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + number));
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
@@ -112,7 +156,7 @@ public class AdminNumEmergencias {
         }
     }
 
-    void dialogEmergencyCall(final Context context, final int number) {
+    void dialogEmergencyCall(final Context context, final String number) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.llamada_emergencia);
         builder.setMessage(R.string.dialogo_llamar);

@@ -43,6 +43,8 @@ import com.mapbox.mapboxsdk.plugins.annotation.OnSymbolClickListener;
 import com.mapbox.mapboxsdk.plugins.annotation.Symbol;
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager;
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions;
+import com.mapbox.search.MapboxSearchSdk;
+import com.mapbox.search.location.DefaultLocationProvider;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -65,6 +67,7 @@ import edu.integrator.rpagv2.Models.Comment;
 import edu.integrator.rpagv2.Providers.AlertProvider;
 import edu.integrator.rpagv2.Providers.CommentProvider;
 import edu.integrator.rpagv2.Providers.ImageProvider;
+import edu.integrator.rpagv2.Providers.UserProvider;
 
 import static android.content.pm.PackageManager.GET_META_DATA;
 
@@ -80,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements
     private AlertProvider mAlertProvider;
     private CommentProvider mCommentProvider;
     private ImageProvider mImageProvider;
+    private UserProvider mUserProvider;
 
     public static final String LOG_TAG = "RPAG-Log";
 
@@ -113,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements
 
     //final static String MAPBOX_STYLE = "mapbox://styles/spartancat7/ckammphtj1rao1imlhr7sjtgy";
     String myLocationSymbolName = "MyLocationIcon";
-    int myLocationSymbolDrawable = R.drawable.circle_blue_overlay;
+    int myLocationSymbolDrawable = R.drawable.pin;
     Symbol myLocationSymbol;
 
     final static int ACCIDENTE_CLASS_ID = 1;
@@ -126,14 +130,14 @@ public class MainActivity extends AppCompatActivity implements
     final static int CORTE_ELECTRICO_CLASS_ID = 8;
 
     final static AlertClass[] listClasesAlertas = {
-            new AlertClass(ACCIDENTE_CLASS_ID, R.drawable.accident, "icon_accidente", R.string.accidente),
-            new AlertClass(INCENDIO_CLASS_ID, R.drawable.fire, "icon_incendio", R.string.incendio),
-            new AlertClass(HERIDO_CLASS_ID, R.drawable.wounded, "icon_herido", R.string.herido),
-            new AlertClass(BLOQUEO_CLASS_ID, R.drawable.blocked, "icon_bloqueo", R.string.bloqueo),
-            new AlertClass(CONGESTIONAMIENTO_CLASS_ID,  R.drawable.traffic, "icon_congestionamiento", R.string.congestionamiento),
-            new AlertClass(MARCHAS_CLASS_ID, R.drawable.marching, "icon_marchas", R.string.marchas),
-            new AlertClass(CALLE_DANADA_CLASS_ID, R.drawable.street_damage, "icon_calle", R.string.calle_danada),
-            new AlertClass(CORTE_ELECTRICO_CLASS_ID, R.drawable.power_cut, "icon_corte", R.string.corte_electrico)
+            new AlertClass(ACCIDENTE_CLASS_ID, R.drawable.accident, "icon_accidente", R.string.accidente, "paramedics"),
+            new AlertClass(INCENDIO_CLASS_ID, R.drawable.fire, "icon_incendio", R.string.incendio, "firefighters"),
+            new AlertClass(HERIDO_CLASS_ID, R.drawable.wounded, "icon_herido", R.string.herido, "paramedics"),
+            new AlertClass(BLOQUEO_CLASS_ID, R.drawable.blocked, "icon_bloqueo", R.string.bloqueo, "police"),
+            new AlertClass(CONGESTIONAMIENTO_CLASS_ID,  R.drawable.traffic, "icon_congestionamiento", R.string.congestionamiento, null),
+            new AlertClass(MARCHAS_CLASS_ID, R.drawable.marching, "icon_marchas", R.string.marchas, null),
+            new AlertClass(CALLE_DANADA_CLASS_ID, R.drawable.street_damage, "icon_calle", R.string.calle_danada, null),
+            new AlertClass(CORTE_ELECTRICO_CLASS_ID, R.drawable.power_cut, "icon_corte", R.string.corte_electrico, null)
     };
 
     ArrayList<AlertData> listAlertData = new ArrayList<>();
@@ -194,6 +198,8 @@ public class MainActivity extends AppCompatActivity implements
 
     void InstanciateMapbox(){
         Mapbox.getInstance(this, accessToken);
+        Log.d(LOG_TAG, "Initializing with Token: " + getString(R.string.mapbox_access_token));
+        MapboxSearchSdk.initialize(getApplication(), getString(R.string.mapbox_access_token), new DefaultLocationProvider(getApplication()));
     }
 
     void InitializeVariables() {
@@ -210,6 +216,7 @@ public class MainActivity extends AppCompatActivity implements
         mAlertProvider = new AlertProvider();
         mCommentProvider = new CommentProvider();
         mImageProvider = new ImageProvider();
+        mUserProvider = new UserProvider();
     }
 
     public double locationLatitude, locationLongitude;
@@ -227,14 +234,14 @@ public class MainActivity extends AppCompatActivity implements
             permissionsToGetList.add(Manifest.permission.ACCESS_FINE_LOCATION);
         }
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            permissionsToGetList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+            permissionsToGetList.add(Manifest.permission.ACCESS_COARSE_LOCATION);
         }
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
-            permissionsToGetList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+            permissionsToGetList.add(Manifest.permission.CAMERA);
         }
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED){
             Toast.makeText(this, "No phone call permissions!", Toast.LENGTH_SHORT).show();
-            permissionsToGetList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+            permissionsToGetList.add(Manifest.permission.CALL_PHONE);
         }
 
         String[] permissionsToGet = new String[permissionsToGetList.size()];
@@ -413,18 +420,23 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void registerButtonClicked(String email, String password, final RegisterDialog dialog) {
+    public void registerButtonClicked(String username, String email, String password, final RegisterDialog dialog) {
 
         mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()) {
                     try {
+                        mUserProvider.create(task.getResult().getUser().getUid(), username).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Log.d(LOG_TAG, "Username " + username + " correctly registered with " + task.getResult().getUser().getUid());
+                            }
+                        });
                         dialog.registerSuccessful();
                     } catch (NullPointerException e) {
                         e.printStackTrace();
                     }
-
                 } else {
                     try {
                         dialog.registerSuccessful();
@@ -462,13 +474,15 @@ public class MainActivity extends AppCompatActivity implements
             myLocationSymbol = symbolManager.create(new SymbolOptions()
                     .withLatLng(new LatLng(locationLatitude, locationLongitude))
                     .withIconImage(myLocationSymbolName)
-                    .withIconSize(0.05f));
+                    .withIconSize(0.15f)
+                    .withIconOffset(new Float[] {0.0f, -0.5f}));
             Log.i(LOG_TAG, "Updated Self Location Symbol: " + locationLatitude + " - " + locationLongitude);
         } else {
             myLocationSymbol = symbolManager.create(new SymbolOptions()
                     .withLatLng(new LatLng(locationLatitude, locationLongitude))
                     .withIconImage(myLocationSymbolName)
-                    .withIconSize(0.05f));
+                    .withIconSize(0.15f)
+                    .withIconOffset(new Float[] {0.0f, -0.5f}));
             Log.i(LOG_TAG, "New Self Location Symbol: " + locationLatitude + " - " + locationLongitude);
         }
 
@@ -591,8 +605,12 @@ public class MainActivity extends AppCompatActivity implements
            takeImage(alertData);
         }
 
-        int numeroEmergencia = adminNumEmergencias.getEmergencyNumber(alertClass.id);
-        adminNumEmergencias.dialogEmergencyCall(this, numeroEmergencia);
+        if (alertClass.help_service != null) {
+            String numeroEmergencia = adminNumEmergencias.getEmergencyNumber(alertClass);
+            if (numeroEmergencia != null) {
+                adminNumEmergencias.dialogEmergencyCall(this, numeroEmergencia);
+            }
+        }
     }
 
     void showUiAlerts() {
@@ -611,6 +629,7 @@ public class MainActivity extends AppCompatActivity implements
 
             createVisibleAlert(id, alertClass, latitud, longitud, fecha);
         }
+        Log.d(LOG_TAG, "Alerts displayed: " + uiAlertList.toString());
     }
 
     public static AlertClass getClass(int classId) {

@@ -4,8 +4,8 @@
     <string name="btnAlertMenuText">!</string>
     <string name="placeholderText">Placeholder</string>
     <string name="alert_options_title">Opciones de Alerta</string>
-    <string name="btn_confirmar_alerta">Confirmar</string>
-    <string name="btn_reportar">Reportar</string>
+    <string name="btn_confirmar_alerta">Verdadero</string>
+    <string name="btn_reportar">Falso</string>
     <string name="comment_hint">Está ahí? Algún comentario?</string>
     <string name="btnComentar_enviar"><![CDATA[>>]]></string>
     <string name="txt_comentarios_placeholder">Comentarios…</string>
@@ -26,13 +26,18 @@
     <string name="register">Registrarse</string>
     <string name="password">Contraseña</string>
     <string name="password_error">Ingrese su contraseña por favor</string>
+    <string name="username">Nombre de Usuario</string>
+    <string name="username_error">Nombre de usuario invalido</string>
     <string name="email">Email</string>
     <string name="email_error">Email invalido</string>
     <string name="login">Ingresar</string>
-    <string name="confirmaciones">Confirmaciones</string>
+    <string name="address">Dirección</string>
+    <string name="confirmaciones">Votos V</string>
+    <string name="reports">Votos F</string>
     <string name="sendComment"><![CDATA[> >]]></string>
     <string name="comments">Comentarios</string>
     <string name="coordinates">Coordenadas</string>
+    <string name="date">Fecha</string>
     <string name="back">Atras</string>
     <string name="next">Siguiente</string>
     <string name="welcome">Bienvenido</string>
@@ -52,5 +57,7 @@
     <string name="local_help_numbers">Numeros de ayuda locales</string>
     <string name="police">Policia</string>
     <string name="firefighters">Bomberos</string>
+    <string name="paramedics">Paramedicos</string>
     <string name="unknown">Desconocido</string>
+    <string name="mapbox_access_token">pk.eyJ1Ijoic3BhcnRhbmNhdDciLCJhIjoiY2p2ZzVkOWRrMDQ1ejQxcmc2bjgxc3JtYSJ9.Nn4-Xa4AaeoVe3p3z67I7g</string>
 </resources>
