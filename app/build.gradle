@@ -5,7 +5,7 @@ android {
     compileSdkVersion 30
     defaultConfig {
         applicationId "edu.integrator.rpagv2"
-        minSdkVersion 26
+        minSdkVersion 29
         targetSdkVersion 30
         versionCode 1
         versionName "2.1"

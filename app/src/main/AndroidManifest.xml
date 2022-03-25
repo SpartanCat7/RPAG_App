@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -19,13 +20,22 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="edu.integrator.rpagv2.HelpNumbersActivity"/>
-        <activity android:name="edu.integrator.rpagv2.CommentActivity" />
-        <activity android:name="edu.integrator.rpagv2.About" />
-        <activity
-            android:name="edu.integrator.rpagv2.Onboarding"
+        <activity android:name="edu.integrator.rpagv2.HelpNumbersActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"/>
+        <activity android:name="edu.integrator.rpagv2.CommentActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"/>
+        <activity android:name="edu.integrator.rpagv2.About"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"/>
+        <activity android:name="edu.integrator.rpagv2.Onboarding"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
-        <activity android:name="edu.integrator.rpagv2.MainActivity">
+        <activity android:name="edu.integrator.rpagv2.MainActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

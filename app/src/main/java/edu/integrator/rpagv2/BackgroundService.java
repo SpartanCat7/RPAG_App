@@ -1,8 +1,10 @@
 package edu.integrator.rpagv2;
 
 import android.Manifest;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -32,6 +34,7 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.integrator.rpagv2.R;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -44,13 +47,18 @@ import edu.integrator.rpagv2.Providers.AlertProvider;
 
 public class BackgroundService extends Service {
 
+    public static final String ACTION_START_FOREGROUND_SERVICE = "ACTION_START_FOREGROUND_SERVICE";
+    public static final String ACTION_STOP_FOREGROUND_SERVICE = "ACTION_STOP_FOREGROUND_SERVICE";
+
     final static String ACTION_LISTALERTAS_UPDATE = "ACTION_LISTALERTAS_UPDATE";
     final static String LISTALERTAS_UPDATE_TAGNAME = "LISTALERTAS_UPDATE_TAGNAME";
 
     final static String ACTION_LOCATION_PERMISSIONS_GRANTED = "ACTION_UPDATE_REQUEST";
 
     NotificationManager notificationManager;
-    ArrayList<String> alreadyNotifiedAlarms = new ArrayList<>();
+    //ArrayList<String> alreadyNotifiedAlarms = new ArrayList<>();
+
+    private final static int ONGOING_NOTIFICATION_ID = 195733;
 
     @Nullable
     @Override
@@ -91,6 +99,22 @@ public class BackgroundService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
+        if(intent != null)
+        {
+            String action = intent.getAction();
+            switch (action)
+            {
+                case ACTION_START_FOREGROUND_SERVICE:
+                    startForegroundService();
+                    Toast.makeText(getApplicationContext(), "Foreground service is started.", Toast.LENGTH_LONG).show();
+                    break;
+                case ACTION_STOP_FOREGROUND_SERVICE:
+                    stopForegroundService();
+                    Toast.makeText(getApplicationContext(), "Foreground service is stopped.", Toast.LENGTH_LONG).show();
+                    break;
+            }
+        }
+
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -123,7 +147,9 @@ public class BackgroundService extends Service {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(getApplicationContext(), "Permisos no concedidos", Toast.LENGTH_SHORT).show();
         } else {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 100, locationListener);
+            Log.d(MainActivity.LOG_TAG, "Requesting location updates");
+            locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 100, locationListener);
         }
     }
 
@@ -257,7 +283,7 @@ public class BackgroundService extends Service {
                 if(alertShouldBeNotified(alertDataList.get(i))){
                     Log.i(MainActivity.LOG_TAG, "Alert " + alertDataList.get(i).getId() + " Notifying");
                     NotifyAlert(alertDataList.get(i));
-                    alreadyNotifiedAlarms.add(alertDataList.get(i).getId());
+                    //alreadyNotifiedAlarms.add(alertDataList.get(i).getId());
                 } else {
                     Log.i(MainActivity.LOG_TAG, "Alert " + alertDataList.get(i).getId() + " already notified");
                 }
@@ -278,11 +304,16 @@ public class BackgroundService extends Service {
     }
 
     private void NotifyAlert(AlertData alerta) {
+        Intent intent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(MainActivity.getClass(alerta.getClassId()).icon)
                 .setContentTitle("Alerta cercana")
                 .setContentText("Una alerta de " + getString(MainActivity.getClass(alerta.getClassId()).name_string_ID) + " ha sido enviada cerca de usted")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
         notificationManager.notify(getNewNotificationID(), builder.build());
     }
 
@@ -291,5 +322,34 @@ public class BackgroundService extends Service {
         int res = nextNotifID;
         nextNotifID += 1;
         return res;
+    }
+
+    private void startForegroundService() {
+        Log.d(MainActivity.LOG_TAG, "Start foreground service.");
+
+        Intent intent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+
+        Intent stopIntent = new Intent(this, BackgroundService.class)
+                .setAction(ACTION_STOP_FOREGROUND_SERVICE);
+        PendingIntent closePendingIntent = PendingIntent.getService(this, 0, stopIntent, 0);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Red Publica de Alertas Viales")
+                .setContentText("App funcionando")
+                .setSmallIcon(R.drawable.info)
+                .setContentIntent(pendingIntent)
+                .addAction(new NotificationCompat.Action(null, "Salir", closePendingIntent));
+
+        Notification notification = builder.build();
+
+        startForeground(ONGOING_NOTIFICATION_ID, notification);
+    }
+
+    private void stopForegroundService() {
+        Log.d(MainActivity.LOG_TAG, "Stop foreground service.");
+        stopForeground(true);
+        stopSelf();
+        System.exit(0);
     }
 }

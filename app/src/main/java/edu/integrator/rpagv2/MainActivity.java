@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final int CAMERA_REQUEST = 1888;
     private static final int CAMERA_PERMISSION_CODE = 100;
 
-    final static String CLASS_LIST_TAG = "CLASS_LIST_TAG";
+    //final static String CLASS_LIST_TAG = "CLASS_LIST_TAG";
     final static String ALERT_MENU_DIALOG_TAG = "ALERT_MENU_DIALOG_TAG";
     final static String LOGIN_DIALOG_TAG = "LOGIN_DIALOG_TAG";
     final static String REGISTER_DIALOG_TAG = "REGISTER_DIALOG_TAG";
@@ -171,8 +171,10 @@ public class MainActivity extends AppCompatActivity implements
     private void InitializeBackgroundService() {
         Log.i( LOG_TAG,"InitializeBackgroundService()");
         Intent backgroundService = new Intent(this, BackgroundService.class);
-        backgroundService.putExtra(CLASS_LIST_TAG, listClasesAlertas);
-        startService(backgroundService);
+        //backgroundService.putExtra(CLASS_LIST_TAG, listClasesAlertas);
+        backgroundService.setAction(BackgroundService.ACTION_START_FOREGROUND_SERVICE);
+        //startService(backgroundService);
+        startForegroundService(backgroundService);
     }
 
     private void RegisterBroadcastReceivers() {
@@ -224,6 +226,9 @@ public class MainActivity extends AppCompatActivity implements
     void GetPermissions(){
         ArrayList<String> permissionsToGetList = new ArrayList<>();
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED){
+            permissionsToGetList.add(Manifest.permission.FOREGROUND_SERVICE);
+        }
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
             permissionsToGetList.add(Manifest.permission.READ_EXTERNAL_STORAGE);
         }
@@ -249,6 +254,7 @@ public class MainActivity extends AppCompatActivity implements
             for (int i = 0; i < permissionsToGetList.size(); i++) {
                 permissionsToGet[i] = permissionsToGetList.get(i);
             }
+            Log.i(LOG_TAG, "Getting " + permissionsToGet.length + " permissions");
             int requestResponse = 0;
             ActivityCompat.requestPermissions(this, permissionsToGet, requestResponse);
         }
