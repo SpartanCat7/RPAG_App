@@ -3,7 +3,6 @@ apply plugin: 'com.google.gms.google-services'  // Google Services plugin
 
 android {
     compileSdkVersion 30
-    buildToolsVersion "29.0.3"
     defaultConfig {
         applicationId "edu.integrator.rpagv2"
         minSdkVersion 26
