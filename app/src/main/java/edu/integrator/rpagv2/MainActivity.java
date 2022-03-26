@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements
         listAlertasUpdateFilter.addCategory(Intent.CATEGORY_DEFAULT);
         listAlertsDataUpdateReceiver = new ListAlertasUpdateReceiver();
 
-        IntentFilter locationUpdateFilter = new IntentFilter(BackgroundService.MyLocationListener.ACTION_LOCATION_UPDATE);
+        IntentFilter locationUpdateFilter = new IntentFilter(BackgroundService.ACTION_LOCATION_UPDATE);
         locationUpdateFilter.addCategory(Intent.CATEGORY_DEFAULT);
         locationUpdateReceiver = new LocationUpdateReceiver();
 
@@ -851,8 +851,8 @@ public class MainActivity extends AppCompatActivity implements
         public void onReceive(Context context, Intent intent) {
             Log.i(LOG_TAG, "Location update received from Main");
 
-            locationLatitude = intent.getExtras().getDouble(BackgroundService.MyLocationListener.LATITUDE_TAGNAME);
-            locationLongitude = intent.getExtras().getDouble(BackgroundService.MyLocationListener.LONGITUDE_TAGNAME);
+            locationLatitude = intent.getExtras().getDouble(BackgroundService.LATITUDE_TAGNAME);
+            locationLongitude = intent.getExtras().getDouble(BackgroundService.LONGITUDE_TAGNAME);
             if(mapboxLoaded) {
                 updateLocationSymbol();
             }
