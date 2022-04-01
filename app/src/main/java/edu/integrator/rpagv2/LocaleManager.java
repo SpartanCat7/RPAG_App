@@ -80,7 +80,7 @@ public class LocaleManager {
     /**
      * Actualiza los recursos de acuerdo al Locale del Context dado
      */
-    public static Context setLocale(Context mContext) {
+    public static Context setContextLocale(Context mContext) {
         return updateResources(mContext, getLanguagePref(mContext));
     }
 

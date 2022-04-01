@@ -3,7 +3,11 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/drawable/confirm_button_highlight.xml" value="0.2815" />
+        <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/drawable/report_button_highlight.xml" value="0.2815" />
+        <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/layout/alerts_options_dialog.xml" value="0.75" />
         <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/layout/login_dialog.xml" value="0.23958333333333334" />
+        <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/menu/options_menu.xml" value="0.63" />
       </map>
     </option>
   </component>

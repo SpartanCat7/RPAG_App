@@ -6,6 +6,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -22,7 +23,6 @@ import com.integrator.rpagv2.R;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.integrator.rpagv2.Models.Comment;
 import edu.integrator.rpagv2.Models.HelpNumber;
 import edu.integrator.rpagv2.Providers.CountryProvider;
 
@@ -127,5 +127,10 @@ public class HelpNumbersActivity extends AppCompatActivity {
         public int getItemCount() {
             return helpNumberList.size();
         }
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleManager.setContextLocale(newBase));
     }
 }

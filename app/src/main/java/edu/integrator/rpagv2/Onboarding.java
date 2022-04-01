@@ -8,6 +8,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,7 +21,12 @@ import com.integrator.rpagv2.R;
 
 public class Onboarding extends AppCompatActivity {
 
-    ViewPager viewPager;
+    public final static String onboardingPreferenceName = "Onboarding";
+    public final static String ONBOARDING_USED_PREFKEY = "ONBOARDING_USED_PREFKEY";
+    public final static String ONBOARDING_USED = "ONBOARDING_USED";
+    public final static String ONBOARDING_NOT_USED = "ONBOARDING_NOT_USED";
+
+    private ViewPager viewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,12 +130,20 @@ public class Onboarding extends AppCompatActivity {
         }
 
         public void onClickNext () {
-            getActivity().finish();
+            Activity activity = getActivity();
+            if (activity != null) {
+                activity.getSharedPreferences(onboardingPreferenceName, MODE_PRIVATE)
+                        .edit().putString(ONBOARDING_USED_PREFKEY, ONBOARDING_USED).apply();
+                activity.finish();
+            }
         }
         public void onClickBack () {
             viewPager.setCurrentItem(0);
         }
     }
 
-
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleManager.setContextLocale(newBase));
+    }
 }

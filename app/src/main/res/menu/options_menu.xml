@@ -18,6 +18,12 @@
         </menu>
     </item>
     <item
+        android:id="@+id/btnAbout"
+        android:title="@string/about_this_app"/>
+    <item
+        android:id="@+id/btnShowOnboarding"
+        android:title="@string/show_onboarding"/>
+    <item
         android:id="@+id/btnHelpNumbers"
         android:title="@string/local_help_numbers"/>
     <item
@@ -26,9 +32,6 @@
     <item
         android:id="@+id/btnRegisterOption"
         android:title="@string/register"/>
-    <item
-        android:id="@+id/btnAbout"
-        android:title="@string/about_this_app"/>
     <item
         android:id="@+id/btnLogOut"
         android:title="@string/log_out" />

@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">RPAGv2</string>
+    <string name="app_name">RPAV</string>
+    <string name="app_name_long">Road Alert Public Network</string>
+    <string name="app_name_complete">RPAV: Road Alert Public Network</string>
     <string name="btnAlertMenuText">!</string>
     <string name="placeholderText">Placeholder</string>
     <string name="alert_options_title">Alert Options</string>
@@ -17,7 +19,7 @@
     <string name="marchas">Manifestations</string>
     <string name="calle_danada">Damaged Street</string>
     <string name="corte_electrico">Power gone</string>
-    <string name="permisos_faltantes">Missing Permisions</string>
+    <string name="permisos_faltantes">Missing Permissions</string>
     <string name="dialogo_llamar">Would you like to call local emergency services?</string>
     <string name="llamar">Call</string>
     <string name="cancelar">Cancel</string>
@@ -59,4 +61,11 @@
     <string name="paramedics">Paramedics</string>
     <string name="unknown">Unknown</string>
     <string name="mapbox_access_token">pk.eyJ1Ijoic3BhcnRhbmNhdDciLCJhIjoiY2p2ZzVkOWRrMDQ1ejQxcmc2bjgxc3JtYSJ9.Nn4-Xa4AaeoVe3p3z67I7g</string>
+
+    <string name="quit">Quit</string>
+    <string name="app_running">App running</string>
+    <string name="show_onboarding">Show Onboarding</string>
+    <string name="positive_vote_entered">Positive vote entered</string>
+    <string name="negative_vote_entered">Negative vote entered</string>
+    <string name="vote_retired">Vote retired</string>
 </resources>

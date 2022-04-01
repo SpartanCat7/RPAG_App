@@ -3,7 +3,6 @@ package edu.integrator.rpagv2;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,10 +17,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.DialogFragment;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.EventListener;
@@ -73,6 +72,7 @@ public class AlertOptionsDialog extends DialogFragment {
     UIAlert alert;
     int confirmationsCount;
     int reportsCount;
+    private Vote voteCastedByUser;
     List<Vote> listVotes;
     //Bitmap imageBitmap;
     ImageData imageData;
@@ -130,40 +130,23 @@ public class AlertOptionsDialog extends DialogFragment {
                 confirmationsCount = 0;
                 reportsCount = 0;
 
-                List<Segment> segments = new ArrayList<>();
-                /*
-                Segment segment1 = new Segment(0, 5, "S1", ContextCompat.getColor(getContext(), R.color.colorGreen));
-                segments.add(segment1);
-                Segment segment2 = new Segment(5, 8, "S2", ContextCompat.getColor(getContext(), R.color.colorRed));
-                segments.add(segment2);*/
-
-                //barView.setSegments(segments);
+                voteCastedByUser = null;
 
                 for (Vote vote : listVotes) {
-                    Segment newSegment;
                     if (vote.isVoteTrue()) {
                         confirmationsCount += 1;
                     } else {
                         reportsCount += 1;
                     }
+
+                    if (vote.getUserId().equals(alertOptionsDialogInterface.getCurrentUserId())) {
+                        voteCastedByUser = vote;
+                    }
                 }
 
-                float trueSeg = confirmationsCount;
-                float falseSeg = reportsCount;
-
-                while (trueSeg + falseSeg > 10) {
-                    trueSeg = trueSeg / 2;
-                    falseSeg = falseSeg / 2;
-                }
-
-                for (int i = 0; i < trueSeg; i++) {
-                    segments.add(new Segment("", "", ContextCompat.getColor(getContext(), R.color.colorGreen)));
-                }
-                for (int i = 0; i < falseSeg; i++) {
-                    segments.add(new Segment("", "", ContextCompat.getColor(getContext(), R.color.colorRed)));
-                }
-                if (!segments.isEmpty())
-                    barView.setSegments(segments);
+                updateVoteButtonStates();
+                //updateVoteButtonStatesNoLimits();
+                updateSegmentGraph();
 
                 txtConfirmations.setText(String.valueOf(confirmationsCount));
                 txtReports.setText(String.valueOf(reportsCount));
@@ -182,6 +165,11 @@ public class AlertOptionsDialog extends DialogFragment {
         btnConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                for (int i = 0; i < listVotes.size(); i++) {
+                    if (alertOptionsDialogInterface.getCurrentUserId().equals(listVotes.get(i).getUserId())) {
+
+                    }
+                }
                 Vote newVote = new Vote(null, alert.id, alertOptionsDialogInterface.getCurrentUserId(), new Date(), true);
 
                 mVoteProvider.create(newVote).addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -226,7 +214,7 @@ public class AlertOptionsDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
                 if(editComment.getText().toString().length() > 0) {
-                    alertOptionsDialogInterface.sendAlertComment(alert, editComment.getText().toString());
+                    alertOptionsDialogInterface.sendAlertComment(alert, editComment.getText().toString(), AlertOptionsDialog.this);
                 } else {
                     Toast.makeText(getContext(), getText(R.string.comment_missing), Toast.LENGTH_LONG).show();
                 }
@@ -246,6 +234,142 @@ public class AlertOptionsDialog extends DialogFragment {
 
         searchRequestTask = reverseGeocoding.search(options, searchCallback);
     }
+
+    private void updateSegmentGraph() {
+        List<Segment> segments = new ArrayList<>();
+
+        float trueSeg = confirmationsCount;
+        float falseSeg = reportsCount;
+
+        while (trueSeg + falseSeg > 10) {
+            trueSeg = trueSeg / 2;
+            falseSeg = falseSeg / 2;
+        }
+
+        for (int i = 0; i < trueSeg; i++) {
+            segments.add(new Segment("", "", ContextCompat.getColor(getContext(), R.color.colorGreen)));
+        }
+        for (int i = 0; i < falseSeg; i++) {
+            segments.add(new Segment("", "", ContextCompat.getColor(getContext(), R.color.colorRed)));
+        }
+        //if (!segments.isEmpty())
+        //    barView.setSegments(segments);
+        barView.setSegments(segments);
+    }
+
+    private void updateVoteButtonStates() {
+        if (voteCastedByUser != null) {
+            if (voteCastedByUser.isVoteTrue()) {
+                btnConfirm.setOnClickListener(removeUserVote);
+                btnConfirm.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.confirm_button_highlight, null));
+                btnReport.setOnClickListener(updateNegativeVote);
+                btnReport.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.report_button, null));
+            } else {
+                btnConfirm.setOnClickListener(updatePositiveVote);
+                btnConfirm.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.confirm_button, null));
+                btnReport.setOnClickListener(removeUserVote);
+                btnReport.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.report_button_highlight, null));
+            }
+        } else {
+            btnConfirm.setOnClickListener(newPositiveVote);
+            btnConfirm.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.confirm_button, null));
+            btnReport.setOnClickListener(newNegativeVote);
+            btnReport.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.report_button, null));
+        }
+    }
+
+    /**
+     * Only for adding votes without limits
+     */
+
+//    private void updateVoteButtonStatesNoLimits() {
+//        btnConfirm.setOnClickListener(newPositiveVote);
+//        btnConfirm.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.confirm_button, null));
+//        btnReport.setOnClickListener(newNegativeVote);
+//        btnReport.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.report_button, null));
+//    }
+
+    View.OnClickListener newPositiveVote = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Vote newVote = new Vote(null, alert.id, alertOptionsDialogInterface.getCurrentUserId(), new Date(), true);
+            mVoteProvider.create(newVote).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    try {
+                        Toast.makeText(getContext(), getString(R.string.positive_vote_entered), Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+    };
+
+    View.OnClickListener newNegativeVote = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Vote newVote = new Vote(null, alert.id, alertOptionsDialogInterface.getCurrentUserId(), new Date(), false);
+            mVoteProvider.create(newVote).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    try {
+                        Toast.makeText(getContext(), getString(R.string.negative_vote_entered), Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+    };
+
+    View.OnClickListener updatePositiveVote = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            mVoteProvider.updateVote(voteCastedByUser.getId(), true).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void unused) {
+                    try {
+                        Toast.makeText(getContext(), getString(R.string.positive_vote_entered), Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+    };
+
+    View.OnClickListener updateNegativeVote = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            mVoteProvider.updateVote(voteCastedByUser.getId(), false).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void unused) {
+                    try {
+                        Toast.makeText(getContext(), getString(R.string.negative_vote_entered), Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+    };
+
+    View.OnClickListener removeUserVote = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            mVoteProvider.remove(voteCastedByUser.getId()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void unused) {
+                    try {
+                        Toast.makeText(getContext(), getString(R.string.vote_retired), Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+    };
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -269,6 +393,11 @@ public class AlertOptionsDialog extends DialogFragment {
         });
     }
 
+    public void clearCommentTextBox() {
+        editComment.setText("");
+        editComment.clearFocus();
+    }
+
     private final SearchCallback searchCallback = new SearchCallback() {
         @Override
         public void onResults(@NotNull List<? extends SearchResult> list, @NotNull ResponseInfo responseInfo) {
@@ -288,7 +417,7 @@ public class AlertOptionsDialog extends DialogFragment {
     };
 
     public interface AlertOptionsDialogInterface {
-        void sendAlertComment(UIAlert alert, String comentario);
+        void sendAlertComment(UIAlert alert, String comentario, AlertOptionsDialog dialog);
         void openComments(UIAlert alert);
         String getCurrentUserId();
     }

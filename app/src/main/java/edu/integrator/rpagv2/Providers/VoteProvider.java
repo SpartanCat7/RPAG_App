@@ -47,6 +47,14 @@ public class VoteProvider {
         return documentReference.set(vote);
     }
 
+    public Task<Void> remove(String voteId) {
+        return mCollection.document(voteId).delete();
+    }
+
+    public Task<Void> updateVote(String voteId, boolean voteTrue) {
+        return mCollection.document(voteId).update("voteTrue", voteTrue);
+    }
+
     public DocumentReference getNewDocument() {
         return mCollection.document();
     }

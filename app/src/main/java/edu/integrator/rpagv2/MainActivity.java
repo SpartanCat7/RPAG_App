@@ -151,34 +151,28 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.println(Log.ASSERT,LOG_TAG,"onCreate()");
+
         LoadLanguaje();
         InstanciateMapbox();
 
         setContentView(R.layout.activity_main);
-        showOnboarding();
+        firstOnboarding();
         InitializeUI();
         InitializeVariables();
         InitializeFirebase();
         InitializeMapbox(savedInstanceState);
-        InitializeBackgroundService();
+
         RegisterBroadcastReceivers();
+        InitializeBackgroundService();
 
         GetPermissions();
 
         resetTitles();
     }
 
-    private void InitializeBackgroundService() {
-        Log.i( LOG_TAG,"InitializeBackgroundService()");
-        Intent backgroundService = new Intent(this, BackgroundService.class);
-        //backgroundService.putExtra(CLASS_LIST_TAG, listClasesAlertas);
-        backgroundService.setAction(BackgroundService.ACTION_START_FOREGROUND_SERVICE);
-        //startService(backgroundService);
-        startForegroundService(backgroundService);
-    }
-
     private void RegisterBroadcastReceivers() {
-        Log.i( LOG_TAG,"RegisterBroadcastReceivers()");
+        Log.d(LOG_TAG,"RegisterBroadcastReceivers()");
 
         IntentFilter listAlertasUpdateFilter = new IntentFilter(BackgroundService.ACTION_LISTALERTAS_UPDATE);
         listAlertasUpdateFilter.addCategory(Intent.CATEGORY_DEFAULT);
@@ -196,12 +190,26 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    private void InitializeBackgroundService() {
+        Log.d(LOG_TAG,"InitializeBackgroundService()");
+        Intent backgroundService = new Intent(this, BackgroundService.class);
+        //backgroundService.putExtra(CLASS_LIST_TAG, listClasesAlertas);
+        backgroundService.setAction(BackgroundService.ACTION_START_FOREGROUND_SERVICE);
+        //startService(backgroundService);
+        startForegroundService(backgroundService);
+    }
+
     String accessToken = "pk.eyJ1Ijoic3BhcnRhbmNhdDciLCJhIjoiY2p2ZzVkOWRrMDQ1ejQxcmc2bjgxc3JtYSJ9.Nn4-Xa4AaeoVe3p3z67I7g";
 
     void InstanciateMapbox(){
         Mapbox.getInstance(this, accessToken);
         Log.d(LOG_TAG, "Initializing with Token: " + getString(R.string.mapbox_access_token));
-        MapboxSearchSdk.initialize(getApplication(), getString(R.string.mapbox_access_token), new DefaultLocationProvider(getApplication()));
+        try {
+            MapboxSearchSdk.initialize(getApplication(), getString(R.string.mapbox_access_token), new DefaultLocationProvider(getApplication()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     void InitializeVariables() {
@@ -254,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements
             for (int i = 0; i < permissionsToGetList.size(); i++) {
                 permissionsToGet[i] = permissionsToGetList.get(i);
             }
-            Log.i(LOG_TAG, "Getting " + permissionsToGet.length + " permissions");
+            Log.d(LOG_TAG, "Getting " + permissionsToGet.length + " permissions");
             int requestResponse = 0;
             ActivityCompat.requestPermissions(this, permissionsToGet, requestResponse);
         }
@@ -281,30 +289,21 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    final static String onboardingPreferenceName = "Onboarding";
-    final static String ONBOARDING_USED_PREFKEY = "ONBOARDING_USED_PREFKEY";
-    final static String ONBOARDING_USED = "ONBOARDING_USED";
-    final static String ONBOARDING_NOT_USED = "ONBOARDING_NOT_USED";
+    private void firstOnboarding() {
+//        getSharedPreferences(Onboarding.onboardingPreferenceName, MODE_PRIVATE)
+//                .edit().putString(Onboarding.ONBOARDING_USED_PREFKEY, Onboarding.ONBOARDING_NOT_USED).apply();
 
-    /**
-     *
-     * Nota: terminar esto!
-     *
-     */
-    void showOnboarding() {
-        SharedPreferences preferences = getSharedPreferences(onboardingPreferenceName, MODE_PRIVATE);
-        String onboardingState = preferences.getString(ONBOARDING_USED_PREFKEY, ONBOARDING_NOT_USED);
-        if (onboardingState.equals(ONBOARDING_NOT_USED)) {
-
-            Intent onboardingIntent = new Intent(this, Onboarding.class);
-            startActivity(onboardingIntent);
-            preferences.edit().putString(ONBOARDING_USED_PREFKEY, ONBOARDING_USED).apply();
-
+        SharedPreferences preferences = getSharedPreferences(Onboarding.onboardingPreferenceName, MODE_PRIVATE);
+        String onboardingState = preferences.getString(Onboarding.ONBOARDING_USED_PREFKEY, Onboarding.ONBOARDING_NOT_USED);
+        if (onboardingState.equals(Onboarding.ONBOARDING_NOT_USED)) {
+            showOnboarding();
             Log.i(LOG_TAG, "Launching Onboarding");
         }
-        /*
+    }
+
+    void showOnboarding() {
         Intent onboardingIntent = new Intent(this, Onboarding.class);
-        startActivity(onboardingIntent);*/
+        startActivity(onboardingIntent);
     }
 
     MapView mapView;
@@ -374,7 +373,7 @@ public class MainActivity extends AppCompatActivity implements
                         );
 
                         mapboxLoaded = true;
-                        Log.i(LOG_TAG, "mapboxLoaded = " + mapboxLoaded);
+                        Log.d(LOG_TAG, "mapboxLoaded = true");
 
                         if (alertDataProvided) {
                             showUiAlerts();
@@ -545,17 +544,18 @@ public class MainActivity extends AppCompatActivity implements
     */
 
     @Override
-    public void sendAlertComment(UIAlert alert, String comment) {
-        sendNewComment(alert, comment);
+    public void sendAlertComment(UIAlert alert, String comment, AlertOptionsDialog dialog) {
+        sendNewComment(alert, comment, dialog);
     }
 
-    private void sendNewComment(UIAlert alert, String text) {
+    private void sendNewComment(UIAlert alert, String text, AlertOptionsDialog dialog) {
         Comment newComment = new Comment(null, alert.id, currentUser.getUid(), new Date(), text);
 
         mCommentProvider.create(newComment).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Toast.makeText(MainActivity.this, "Comment Sent", Toast.LENGTH_SHORT).show();
+                dialog.clearCommentTextBox();
             }
         });
     }
@@ -916,82 +916,66 @@ public class MainActivity extends AppCompatActivity implements
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.btnSpanish)
             setNewLocale(MainActivity.this, LocaleManager.SPANISH);
-        if (item.getItemId() == R.id.btnEnglish)
+        else if (item.getItemId() == R.id.btnEnglish)
             setNewLocale(MainActivity.this, LocaleManager.ENGLISH);
-        if (item.getItemId() == R.id.btnAutomaticLang)
+        else if (item.getItemId() == R.id.btnAutomaticLang)
             setNewLocale(MainActivity.this, LocaleManager.AUTO);
-        if (item.getItemId() == R.id.btnLoginOption)
+        else if (item.getItemId() == R.id.btnLoginOption)
             openLoginDialog();
-        if (item.getItemId() == R.id.btnRegisterOption)
+        else if (item.getItemId() == R.id.btnRegisterOption)
             openRegisterDialog();
-        if (item.getItemId() == R.id.btnAbout)
+        else if (item.getItemId() == R.id.btnAbout)
             openAboutScreen();
-        if (item.getItemId() == R.id.btnLogOut)
+        else if (item.getItemId() == R.id.btnLogOut)
             LogOut();
-        if (item.getItemId() == R.id.btnHelpNumbers)
+        else if (item.getItemId() == R.id.btnHelpNumbers)
             OpenHelpNumbersScreen();
-
-        switch (item.getItemId()) {
-            case R.id.btnSpanish:
-                setNewLocale(MainActivity.this, LocaleManager.SPANISH);
-                return true;
-            case R.id.btnEnglish:
-                setNewLocale(MainActivity.this, LocaleManager.ENGLISH);
-                return true;
-            case R.id.btnAutomaticLang:
-                setNewLocale(MainActivity.this, LocaleManager.AUTO);
-                return true;
-            case R.id.btnLoginOption:
-                openLoginDialog();
-                return true;
-            case R.id.btnRegisterOption:
-                openRegisterDialog();
-                return true;
-            case R.id.btnAbout:
-                openAboutScreen();
-                return true;
-            case R.id.btnLogOut:
-                LogOut();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
+        else if (item.getItemId() == R.id.btnShowOnboarding)
+            showOnboarding();
+        else
+            return super.onOptionsItemSelected(item);
+        return true;
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        Log.println(Log.ASSERT,"MapboxTestLog","onStart()");
+        Log.println(Log.ASSERT,LOG_TAG,"onStart()");
         mapView.onStart();
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        Log.println(Log.ASSERT,LOG_TAG,"onResume()");
         mapView.onResume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        Log.println(Log.ASSERT,LOG_TAG,"onPause()");
         mapView.onPause();
     }
 
     @Override
     public void onStop() {
         super.onStop();
+        Log.println(Log.ASSERT,LOG_TAG,"onStop()");
         mapView.onStop();
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
+        Log.println(Log.ASSERT,LOG_TAG,"onLowMemory()");
         mapView.onLowMemory();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.println(Log.ASSERT,LOG_TAG,"onDestroy()");
         mapView.onDestroy();
     }
 
@@ -1003,12 +987,11 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(LocaleManager.setLocale(newBase));
+        super.attachBaseContext(LocaleManager.setContextLocale(newBase));
     }
 
     @Override
     public void onBackPressed() {
-        getSharedPreferences(onboardingPreferenceName, MODE_PRIVATE).edit().putString(ONBOARDING_USED_PREFKEY, ONBOARDING_NOT_USED).apply();
         super.onBackPressed();
     }
 }

@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -62,7 +63,8 @@ public class BackgroundService extends Service {
     final static String ACTION_LISTALERTAS_UPDATE = "ACTION_LISTALERTAS_UPDATE";
     final static String LISTALERTAS_UPDATE_TAGNAME = "LISTALERTAS_UPDATE_TAGNAME";
 
-    final static String ACTION_LOCATION_PERMISSIONS_GRANTED = "ACTION_UPDATE_REQUEST";
+    final static String ACTION_LOCATION_PERMISSIONS_GRANTED = "ACTION_LOCATION_PERMISSIONS_GRANTED";
+    final static String ACTION_DATA_UPDATE_REQUEST = "ACTION_DATA_UPDATE_REQUEST";
 
     public Location location;
     final static String ACTION_LOCATION_UPDATE = "ACTION_LOCATION_UPDATE";
@@ -93,6 +95,7 @@ public class BackgroundService extends Service {
     ArrayList<QuerySnapshot> alertQuerySnapshotsList;
 
     LocationPermissionGrantedReceiver locationPermissionGrantedReceiver;
+//    DataUpdateRequestReceiver dataUpdateRequestReceiver;
 
     AlertProvider mAlertProvider;
 
@@ -102,18 +105,23 @@ public class BackgroundService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.i(MainActivity.LOG_TAG, "Foreground Service Initialized");
+        Log.d(MainActivity.LOG_TAG, "Foreground Service onCreate()");
 
         nextNotifID = 1000;
         RegisterBroadcastReceivers();
         createNotificationChannel();
         mAlertProvider = new AlertProvider();
         alertListenerRegistrationList = new ArrayList<>();
+
+        startForegroundService();
+        Toast.makeText(getApplicationContext(), "Foreground service started.", Toast.LENGTH_LONG).show();
+
         InitializeLocation();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(MainActivity.LOG_TAG, "Service onStartCommand()");
 
         if(intent != null)
         {
@@ -121,12 +129,13 @@ public class BackgroundService extends Service {
             switch (action)
             {
                 case ACTION_START_FOREGROUND_SERVICE:
-                    startForegroundService();
-                    Toast.makeText(getApplicationContext(), "Foreground service is started.", Toast.LENGTH_LONG).show();
+                    if (alertDataList != null) {
+                        sendAlertList(alertDataList);
+                    }
                     break;
                 case ACTION_STOP_FOREGROUND_SERVICE:
                     stopForegroundService();
-                    Toast.makeText(getApplicationContext(), "Foreground service is stopped.", Toast.LENGTH_LONG).show();
+                    //Toast.makeText(getApplicationContext(), "Foreground service is stopped.", Toast.LENGTH_LONG).show();
                     break;
             }
         }
@@ -145,6 +154,16 @@ public class BackgroundService extends Service {
         } catch (Exception e) {
             Log.e(MainActivity.LOG_TAG, Objects.requireNonNull(e.getMessage()));
         }
+
+//        IntentFilter dataUpdateRequestFilter = new IntentFilter(ACTION_DATA_UPDATE_REQUEST);
+//        dataUpdateRequestFilter.addCategory(Intent.CATEGORY_DEFAULT);
+//        dataUpdateRequestReceiver = new DataUpdateRequestReceiver();
+//
+//        try {
+//            registerReceiver(dataUpdateRequestReceiver, dataUpdateRequestFilter);
+//        } catch (Exception e) {
+//            Log.e(MainActivity.LOG_TAG, Objects.requireNonNull(e.getMessage()));
+//        }
 
     }
 
@@ -197,7 +216,7 @@ public class BackgroundService extends Service {
             location = newLocation;
 
             Toast.makeText(getApplicationContext(), "Localizacion actualizada", Toast.LENGTH_SHORT).show();
-            Log.i("RPAG-Log", "Location Updated: " + location.getLongitude() + " - " + location.getLatitude());
+            Log.d(MainActivity.LOG_TAG, "Location Updated: " + location.getLongitude() + " - " + location.getLatitude());
 
             GeoLocation currentLocation = new GeoLocation(location.getLatitude(), location.getLongitude());
 
@@ -276,6 +295,19 @@ public class BackgroundService extends Service {
             InitializeLocation();
         }
     }
+
+//    private class DataUpdateRequestReceiver extends BroadcastReceiver {
+//
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            Log.i("RPAG-Log", "DataUpdateRequestReceiver Activated");
+//            if (alertDataList != null) {
+//                sendAlertList(alertDataList);
+//            } else {
+//                Log.d(MainActivity.LOG_TAG, "Update requested, but alertDataList is still null");
+//            }
+//        }
+//    }
 
 
 //    public class MyLocationListener implements LocationListener {
@@ -400,9 +432,9 @@ public class BackgroundService extends Service {
                     Log.i(MainActivity.LOG_TAG, "Alert " + alertDataList.get(i).getId() + " Notifying");
                     NotifyAlert(alertDataList.get(i));
                     //alreadyNotifiedAlarms.add(alertDataList.get(i).getId());
-                } else {
+                } /*else {
                     Log.i(MainActivity.LOG_TAG, "Alert " + alertDataList.get(i).getId() + " already notified");
-                }
+                }*/
             }
 
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -451,15 +483,16 @@ public class BackgroundService extends Service {
         PendingIntent closePendingIntent = PendingIntent.getService(this, 0, stopIntent, 0);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Red Publica de Alertas Viales")
-                .setContentText("App funcionando")
+                .setContentTitle(getString(R.string.app_name_long))
+                .setContentText(getString(R.string.app_running))
                 .setSmallIcon(R.drawable.info)
                 .setContentIntent(pendingIntent)
-                .addAction(new NotificationCompat.Action(null, "Salir", closePendingIntent));
+                .addAction(new NotificationCompat.Action(null, getString(R.string.quit), closePendingIntent));
 
         Notification notification = builder.build();
 
         startForeground(ONGOING_NOTIFICATION_ID, notification);
+        Toast.makeText(getApplicationContext(), "Foreground service started.", Toast.LENGTH_LONG).show();
     }
 
     private void stopForegroundService() {
@@ -468,5 +501,10 @@ public class BackgroundService extends Service {
         fusedLocationClient.removeLocationUpdates(locationCallback);
         stopSelf();
         System.exit(0);
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleManager.setContextLocale(newBase));
     }
 }
