@@ -34,6 +34,7 @@ public class AlertProvider {
         alert.put("latitude", alertData.getLatitude());
         alert.put("longitude", alertData.getLongitude());
         alert.put("geohash", alertData.getGeohash());
+        alert.put("customName", alertData.getCustomName());
 
         return newDocument.set(alert);
     }
@@ -48,6 +49,7 @@ public class AlertProvider {
         alert.put("latitude", alertData.getLatitude());
         alert.put("longitude", alertData.getLongitude());
         alert.put("geohash", alertData.getGeohash());
+        alert.put("customName", alertData.getCustomName());
 
         return documentReference.set(alert);
     }

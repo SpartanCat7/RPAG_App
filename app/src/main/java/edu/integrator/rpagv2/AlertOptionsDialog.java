@@ -122,7 +122,7 @@ public class AlertOptionsDialog extends DialogFragment {
                 .build();*/
 
         mVoteProvider = new VoteProvider();
-        voteListenerRegistration = mVoteProvider.getVotesByAlert(alert.id).addSnapshotListener(new EventListener<QuerySnapshot>() {
+        voteListenerRegistration = mVoteProvider.getVotesByAlert(alert.getAlertData().getId()).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                 listVotes = value.toObjects(Vote.class);
@@ -153,14 +153,17 @@ public class AlertOptionsDialog extends DialogFragment {
             }
         });
 
-        txtTitle.setText(alert.alertClass.name_string_ID);
+        if (alert.getAlertClass().id == MainActivity.CUSTOM_CLASS_ID)
+            txtTitle.setText(alert.getAlertData().getCustomName());
+        else
+            txtTitle.setText(alert.getAlertClass().name_string_ID);
 
-        imgAlertIcon.setImageDrawable(getContext().getDrawable(alert.alertClass.icon));
+        imgAlertIcon.setImageDrawable(getContext().getDrawable(alert.getAlertClass().icon));
 
         //txtCoordinates.setText(alert.lat + " / " + alert.len);
 
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-        txtDate.setText(dateFormat.format(alert.date));
+        txtDate.setText(dateFormat.format(alert.getAlertData().getDate()));
 
         btnConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -170,7 +173,7 @@ public class AlertOptionsDialog extends DialogFragment {
 
                     }
                 }
-                Vote newVote = new Vote(null, alert.id, alertOptionsDialogInterface.getCurrentUserId(), new Date(), true);
+                Vote newVote = new Vote(null, alert.getAlertData().getId(), alertOptionsDialogInterface.getCurrentUserId(), new Date(), true);
 
                 mVoteProvider.create(newVote).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -183,7 +186,7 @@ public class AlertOptionsDialog extends DialogFragment {
         btnReport.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Vote newVote = new Vote(null, alert.id, alertOptionsDialogInterface.getCurrentUserId(), new Date(), false);
+                Vote newVote = new Vote(null, alert.getAlertData().getId(), alertOptionsDialogInterface.getCurrentUserId(), new Date(), false);
 
                 mVoteProvider.create(newVote).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -196,7 +199,7 @@ public class AlertOptionsDialog extends DialogFragment {
 
         imgAlertPhoto.setVisibility(View.GONE);
         mImageProvider = new ImageProvider();
-        mImageProvider.getImagesByAlert(alert.id).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+        mImageProvider.getImagesByAlert(alert.getAlertData().getId()).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 if (queryDocumentSnapshots.size() > 0) {
@@ -228,7 +231,7 @@ public class AlertOptionsDialog extends DialogFragment {
         });
 
         reverseGeocoding = MapboxSearchSdk.createReverseGeocodingSearchEngine();
-        ReverseGeoOptions options = new ReverseGeoOptions.Builder(Point.fromLngLat(alert.len, alert.lat))
+        ReverseGeoOptions options = new ReverseGeoOptions.Builder(Point.fromLngLat(alert.getAlertData().getLongitude(), alert.getAlertData().getLongitude()))
                 .limit(1)
                 .build();
 
@@ -292,7 +295,7 @@ public class AlertOptionsDialog extends DialogFragment {
     View.OnClickListener newPositiveVote = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Vote newVote = new Vote(null, alert.id, alertOptionsDialogInterface.getCurrentUserId(), new Date(), true);
+            Vote newVote = new Vote(null, alert.getAlertData().getId(), alertOptionsDialogInterface.getCurrentUserId(), new Date(), true);
             mVoteProvider.create(newVote).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
@@ -309,7 +312,7 @@ public class AlertOptionsDialog extends DialogFragment {
     View.OnClickListener newNegativeVote = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Vote newVote = new Vote(null, alert.id, alertOptionsDialogInterface.getCurrentUserId(), new Date(), false);
+            Vote newVote = new Vote(null, alert.getAlertData().getId(), alertOptionsDialogInterface.getCurrentUserId(), new Date(), false);
             mVoteProvider.create(newVote).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {

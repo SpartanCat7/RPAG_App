@@ -1,42 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:orientation="vertical"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <LinearLayout
         android:id="@+id/chkIncluidePicLayout"
-        android:layout_width="400dp"
+        android:layout_width="350dp"
         android:layout_height="wrap_content"
-        android:background="@color/colorAccent"
-        android:gravity="center"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:background="@color/colorLightPurple"
+        android:gravity="center">
 
         <CheckBox
             android:id="@+id/chkIncluidePic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/incluir_imagen"
-            android:textColor="@color/colorWhite" />
+            android:textColor="@color/colorWhite"
+            android:buttonTint="@color/colorWhite"/>
 
     </LinearLayout>
 
     <ScrollView
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/chkIncluidePicLayout"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:paddingVertical="15dp"
+        android:fillViewport="true"
         android:background="@color/dark">
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:paddingVertical="10dp">
             <Button
                 android:id="@+id/btnAccidente"
                 android:layout_width="match_parent"
@@ -117,9 +113,38 @@
                 android:textAlignment="viewStart"
                 android:background="@drawable/alert_menu_button"
                 android:textColor="@color/colorWhite"/>
+            <LinearLayout
+                android:id="@+id/btnCustomAlert"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:paddingBottom="5dp"
+                android:background="@drawable/alert_menu_button">
+
+                <ImageView
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:padding="5dp"
+                    android:layout_marginStart="10dp"
+                    android:src="@drawable/alert_menu"/>
+                <EditText
+                    android:id="@+id/editTxtCustomAlert"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:inputType="text"
+                    android:hint="@string/custom_alert"
+                    android:maxLength="30"
+                    android:textSize="16sp"
+                    android:textColor="@color/colorWhite"
+                    android:textColorHint="@color/colorWhite"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="50dp"
+                    android:backgroundTint="@color/colorWhite"/>
+            </LinearLayout>
         </LinearLayout>
 
     </ScrollView>
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

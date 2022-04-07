@@ -5,26 +5,42 @@ import com.mapbox.mapboxsdk.plugins.annotation.Symbol;
 import java.util.Date;
 
 public class UIAlert {
-    public String id;
-    public double lat, len;
-    public Date date;
-    public Symbol symbol;
-    public AlertClass alertClass;
+    private AlertData alertData;
+    private AlertClass alertClass;
+    private Symbol symbol;
 
-    public UIAlert(String id, double lat, double len, Date date, Symbol symbol, AlertClass alertClass) {
-        this.id = id;
-        this.lat = lat;
-        this.len = len;
-        this.date = date;
+    public UIAlert(AlertData alertData, AlertClass alertClass, Symbol symbol) {
+        this.alertData = alertData;
+        this.alertClass = alertClass;
         this.symbol = symbol;
+    }
+
+    public UIAlert(AlertData alertData, AlertClass alertClass) {
+        this.alertData = alertData;
         this.alertClass = alertClass;
     }
 
-    public UIAlert(String id, double lat, double len, Date date, AlertClass alertClass) {
-        this.id = id;
-        this.lat = lat;
-        this.len = len;
-        this.date = date;
+    public AlertData getAlertData() {
+        return alertData;
+    }
+
+    public void setAlertData(AlertData alertData) {
+        this.alertData = alertData;
+    }
+
+    public AlertClass getAlertClass() {
+        return alertClass;
+    }
+
+    public void setAlertClass(AlertClass alertClass) {
         this.alertClass = alertClass;
+    }
+
+    public Symbol getSymbol() {
+        return symbol;
+    }
+
+    public void setSymbol(Symbol symbol) {
+        this.symbol = symbol;
     }
 }

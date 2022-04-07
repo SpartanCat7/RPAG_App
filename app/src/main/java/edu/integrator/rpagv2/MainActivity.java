@@ -120,6 +120,7 @@ public class MainActivity extends AppCompatActivity implements
     int myLocationSymbolDrawable = R.drawable.pin;
     Symbol myLocationSymbol;
 
+    final static int CUSTOM_CLASS_ID = 0;
     final static int ACCIDENTE_CLASS_ID = 1;
     final static int INCENDIO_CLASS_ID = 2;
     final static int HERIDO_CLASS_ID = 3;
@@ -130,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements
     final static int CORTE_ELECTRICO_CLASS_ID = 8;
 
     final static AlertClass[] listClasesAlertas = {
+            new AlertClass(CUSTOM_CLASS_ID, R.drawable.alert_menu, "icon_custom_alert", R.string.custom_alert, null),
             new AlertClass(ACCIDENTE_CLASS_ID, R.drawable.accident, "icon_accidente", R.string.accidente, "paramedics"),
             new AlertClass(INCENDIO_CLASS_ID, R.drawable.fire, "icon_incendio", R.string.incendio, "firefighters"),
             new AlertClass(HERIDO_CLASS_ID, R.drawable.wounded, "icon_herido", R.string.herido, "paramedics"),
@@ -459,16 +461,18 @@ public class MainActivity extends AppCompatActivity implements
         updateOptionsMenu(currentUser);
     }
 
-    void createVisibleAlert(String id, AlertClass clase, double lat, double len, Date fecha) {
+    void createVisibleAlert(AlertData data) {
+
+        AlertClass alertClass = getClass(data.getClassId());
 
         Float[] offset = {0f, 2.5f};
         Symbol symbol = symbolManager.create(new SymbolOptions()
-                .withLatLng(new LatLng(lat,len))
-                .withIconImage(clase.icon_name)
+                .withLatLng(new LatLng(data.getLatitude(), data.getLongitude()))
+                .withIconImage(alertClass.icon_name)
                 .withIconSize(0.30f)
                 .withIconOffset(offset));
 
-        UIAlert alert = new UIAlert(id,lat,len, fecha,symbol,clase);
+        UIAlert alert = new UIAlert(data, alertClass, symbol);
         uiAlertList.add(alert);
     }
 
@@ -495,7 +499,7 @@ public class MainActivity extends AppCompatActivity implements
 
     UIAlert getAlertaBySymbol(Symbol symbol){
         for (int i = 0; i < uiAlertList.size(); i++){
-            if (uiAlertList.get(i).symbol == symbol) {
+            if (uiAlertList.get(i).getSymbol() == symbol) {
                 return uiAlertList.get(i);
             }
         }
@@ -549,7 +553,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void sendNewComment(UIAlert alert, String text, AlertOptionsDialog dialog) {
-        Comment newComment = new Comment(null, alert.id, currentUser.getUid(), new Date(), text);
+        Comment newComment = new Comment(null, alert.getAlertData().getId(), currentUser.getUid(), new Date(), text);
 
         mCommentProvider.create(newComment).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
@@ -568,7 +572,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void openComments(UIAlert alert) {
         Intent intent = new Intent(this, CommentActivity.class);
-        intent.putExtra("alertId", alert.id);
+        intent.putExtra("alertId", alert.getAlertData().getId());
         startActivity(intent);
     }
 
@@ -579,10 +583,16 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onAlertClicked(int class_id, boolean includePic) {
-        SendNewAlert(getClass(class_id), includePic);
+        SendNewAlert(getClass(class_id), null, includePic);
     }
 
-    void SendNewAlert(AlertClass alertClass, boolean includePic) {
+    @Override
+    public void onCustomAlertClicked(String customName, boolean includePic) {
+        Toast.makeText(this, "send alert! (" + customName + ")", Toast.LENGTH_SHORT).show();
+        SendNewAlert(getClass(CUSTOM_CLASS_ID), customName, includePic);
+    }
+
+    void SendNewAlert(AlertClass alertClass, String customName, boolean includePic) {
 
         DocumentReference newDoc = mAlertProvider.getNewDocument();
 
@@ -595,15 +605,19 @@ public class MainActivity extends AppCompatActivity implements
                 new Date()
         );
 
+        if (alertClass.id == CUSTOM_CLASS_ID) {
+            alertData.setCustomName(customName);
+        }
+
         mAlertProvider.create(alertData, newDoc).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Toast.makeText(MainActivity.this, "Alerta Enviada", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, getText(R.string.alert_sent), Toast.LENGTH_SHORT).show();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(MainActivity.this, "Alerta no pudo ser enviada", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, getText(R.string.alert_not_sent), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -621,7 +635,7 @@ public class MainActivity extends AppCompatActivity implements
 
     void showUiAlerts() {
         for (int i = 0; i < uiAlertList.size(); i++) {
-            symbolManager.delete(uiAlertList.get(i).symbol);
+            symbolManager.delete(uiAlertList.get(i).getSymbol());
         }
         uiAlertList = new ArrayList<>();
 
@@ -633,7 +647,7 @@ public class MainActivity extends AppCompatActivity implements
             //Date fecha = listAlertData.get(i).getFecha().toDate();
             AlertClass alertClass = getClass(listAlertData.get(i).getClassId());
 
-            createVisibleAlert(id, alertClass, latitud, longitud, fecha);
+            createVisibleAlert(listAlertData.get(i));
         }
         Log.d(LOG_TAG, "Alerts displayed: " + uiAlertList.toString());
     }

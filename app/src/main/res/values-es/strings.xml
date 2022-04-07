@@ -20,6 +20,10 @@
     <string name="marchas">Marchas</string>
     <string name="calle_danada">Calle Dañada</string>
     <string name="corte_electrico">Corte Electrico</string>
+    <string name="custom_alert">Alerta personalizada</string>
+    <string name="custom_alert_empty_error">Inserte un nombre de alerta</string>
+    <string name="alert_sent">Alerta enviada</string>
+    <string name="alert_not_sent">Alerta no pudo ser enviada</string>
     <string name="permisos_faltantes">Permisos Faltantes</string>
     <string name="dialogo_llamar">¿Desearia llamar a servicios de emergencia locales?</string>
     <string name="llamar">Llamar</string>

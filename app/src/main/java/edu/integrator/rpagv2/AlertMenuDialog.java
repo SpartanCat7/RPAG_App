@@ -8,6 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,6 +24,7 @@ public class AlertMenuDialog extends DialogFragment {
 
     private CheckBox chkIncluidePic;
 
+    EditText editCustomAlertName;
 
     @Nullable
     @Override
@@ -43,6 +47,10 @@ public class AlertMenuDialog extends DialogFragment {
                 btnAlertMarchas,
                 btnAlertCalleDanada,
                 btnAlertCorte;
+
+        LinearLayout btnCustomAlert = view.findViewById(R.id.btnCustomAlert);
+        editCustomAlertName = view.findViewById(R.id.editTxtCustomAlert);
+
         btnAlertAccidente = view.findViewById(R.id.btnAccidente);
         btnAlertIncendio = view.findViewById(R.id.btnIncendio);
         btnAlertHerido = view.findViewById(R.id.btnHerido);
@@ -52,47 +60,37 @@ public class AlertMenuDialog extends DialogFragment {
         btnAlertCalleDanada = view.findViewById(R.id.btnCalleDanada);
         btnAlertCorte = view.findViewById(R.id.btnCorte);
 
-        View.OnClickListener alertBtnListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int id = v.getId();
-                switch (id){
-                    case R.id.btnAccidente:
-                        alertMenuDialogInterface.onAlertClicked(MainActivity.ACCIDENTE_CLASS_ID, chkIncluidePic.isChecked());
-                        break;
-                    case R.id.btnIncendio:
-                        alertMenuDialogInterface.onAlertClicked(MainActivity.INCENDIO_CLASS_ID, chkIncluidePic.isChecked());
-                        break;
-                    case R.id.btnHerido:
-                        alertMenuDialogInterface.onAlertClicked(MainActivity.HERIDO_CLASS_ID, chkIncluidePic.isChecked());
-                        break;
-                    case R.id.btnBloqueo:
-                        alertMenuDialogInterface.onAlertClicked(MainActivity.BLOQUEO_CLASS_ID, chkIncluidePic.isChecked());
-                        break;
-                    case R.id.btnCongestionamiento:
-                        alertMenuDialogInterface.onAlertClicked(MainActivity.CONGESTIONAMIENTO_CLASS_ID, chkIncluidePic.isChecked());
-                        break;
-                    case R.id.btnMarchas:
-                        alertMenuDialogInterface.onAlertClicked(MainActivity.MARCHAS_CLASS_ID, chkIncluidePic.isChecked());
-                        break;
-                    case R.id.btnCalleDanada:
-                        alertMenuDialogInterface.onAlertClicked(MainActivity.CALLE_DANADA_CLASS_ID, chkIncluidePic.isChecked());
-                        break;
-                    case R.id.btnCorte:
-                        alertMenuDialogInterface.onAlertClicked(MainActivity.CORTE_ELECTRICO_CLASS_ID, chkIncluidePic.isChecked());
-                        break;
-                }
+        btnAlertAccidente.setOnClickListener(v -> {
+            alertMenuDialogInterface.onAlertClicked(MainActivity.ACCIDENTE_CLASS_ID, chkIncluidePic.isChecked());
+        });
+        btnAlertIncendio.setOnClickListener(v -> {
+            alertMenuDialogInterface.onAlertClicked(MainActivity.INCENDIO_CLASS_ID, chkIncluidePic.isChecked());
+        });
+        btnAlertHerido.setOnClickListener(v -> {
+            alertMenuDialogInterface.onAlertClicked(MainActivity.HERIDO_CLASS_ID, chkIncluidePic.isChecked());
+        });
+        btnAlertBloqueo.setOnClickListener(v -> {
+            alertMenuDialogInterface.onAlertClicked(MainActivity.BLOQUEO_CLASS_ID, chkIncluidePic.isChecked());
+        });
+        btnAlertCongestionamiento.setOnClickListener(v -> {
+            alertMenuDialogInterface.onAlertClicked(MainActivity.CONGESTIONAMIENTO_CLASS_ID, chkIncluidePic.isChecked());
+        });
+        btnAlertMarchas.setOnClickListener(v -> {
+            alertMenuDialogInterface.onAlertClicked(MainActivity.MARCHAS_CLASS_ID, chkIncluidePic.isChecked());
+        });
+        btnAlertCalleDanada.setOnClickListener(v -> {
+            alertMenuDialogInterface.onAlertClicked(MainActivity.CALLE_DANADA_CLASS_ID, chkIncluidePic.isChecked());
+        });
+        btnAlertCorte.setOnClickListener(v -> {
+            alertMenuDialogInterface.onAlertClicked(MainActivity.CORTE_ELECTRICO_CLASS_ID, chkIncluidePic.isChecked());
+        });
+        btnCustomAlert.setOnClickListener(v -> {
+            if (editCustomAlertName.getText().length() > 0)
+                alertMenuDialogInterface.onCustomAlertClicked(editCustomAlertName.getText().toString(), chkIncluidePic.isChecked());
+            else {
+                Toast.makeText(getContext(), getText(R.string.custom_alert_empty_error), Toast.LENGTH_SHORT).show();
             }
-
-        };
-        btnAlertAccidente.setOnClickListener(alertBtnListener);
-        btnAlertIncendio.setOnClickListener(alertBtnListener);
-        btnAlertHerido.setOnClickListener(alertBtnListener);
-        btnAlertBloqueo.setOnClickListener(alertBtnListener);
-        btnAlertCongestionamiento.setOnClickListener(alertBtnListener);
-        btnAlertMarchas.setOnClickListener(alertBtnListener);
-        btnAlertCalleDanada.setOnClickListener(alertBtnListener);
-        btnAlertCorte.setOnClickListener(alertBtnListener);
+        });
     }
 
 
@@ -105,5 +103,6 @@ public class AlertMenuDialog extends DialogFragment {
 
     public interface AlertMenuDialogInterface {
         void onAlertClicked(int class_id, boolean includePic);
+        void onCustomAlertClicked(String customName, boolean includePic);
     }
 }

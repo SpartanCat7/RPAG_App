@@ -17,6 +17,8 @@ public class AlertData implements java.io.Serializable {
     private int classId;
     private Date date;
 
+    private String customName;
+
     public AlertData(String id, String userId, double latitude, double longitude, int classId, Date date) {
         this.id = id;
         this.userId = userId;
@@ -96,5 +98,13 @@ public class AlertData implements java.io.Serializable {
 
     public void setGeohash(String geohash) {
         this.geohash = geohash;
+    }
+
+    public String getCustomName() {
+        return customName;
+    }
+
+    public void setCustomName(String customName) {
+        this.customName = customName;
     }
 }
