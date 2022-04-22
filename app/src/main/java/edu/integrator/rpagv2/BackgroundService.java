@@ -16,6 +16,7 @@ import android.content.pm.ServiceInfo;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -50,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 import edu.integrator.rpagv2.Models.AlertData;
 import edu.integrator.rpagv2.Providers.AlertProvider;
@@ -107,7 +109,6 @@ public class BackgroundService extends Service {
         super.onCreate();
         Log.d(MainActivity.LOG_TAG, "Foreground Service onCreate()");
 
-        nextNotifID = 1000;
         RegisterBroadcastReceivers();
         createNotificationChannel();
         mAlertProvider = new AlertProvider();
@@ -445,14 +446,13 @@ public class BackgroundService extends Service {
 
     private boolean alertShouldBeNotified(AlertData alertData) {
         String lastCheck = PreferenceManager.getDefaultSharedPreferences(this).getString(LAST_CHECK_TIME_KEY, Long.toString(new Date().getTime() - 3600 * 1000));
-        if (alertData.getDate().getTime() >= Long.parseLong(lastCheck))
-            return true;
-
-        return false;
+        return alertData.getDate().getTime() >= Long.parseLong(lastCheck);
     }
 
     private void NotifyAlert(AlertData alerta) {
         Intent intent = new Intent(this, MainActivity.class);
+        intent.setAction(MainActivity.ACTION_SHOW_ALERT);
+        intent.putExtra(MainActivity.EXTRA_SHOW_ALERT_ID_TAG, alerta.getId());
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
@@ -465,11 +465,8 @@ public class BackgroundService extends Service {
         notificationManager.notify(getNewNotificationID(), builder.build());
     }
 
-    int nextNotifID = 1000;
     int getNewNotificationID() {
-        int res = nextNotifID;
-        nextNotifID += 1;
-        return res;
+        return new Random().nextInt();
     }
 
     private void startForegroundService() {
@@ -485,7 +482,7 @@ public class BackgroundService extends Service {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(getString(R.string.app_name_long))
                 .setContentText(getString(R.string.app_running))
-                .setSmallIcon(R.drawable.info)
+                .setSmallIcon(R.drawable.ic_foreground_notif_icon)
                 .setContentIntent(pendingIntent)
                 .addAction(new NotificationCompat.Action(null, getString(R.string.quit), closePendingIntent));
 

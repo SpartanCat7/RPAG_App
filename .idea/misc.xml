@@ -3,13 +3,20 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/drawable-anydpi/login_white.xml" value="0.2675" />
+        <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/drawable-anydpi/register_user_white.xml" value="0.2675" />
         <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/drawable/alert_menu_button.xml" value="0.2815" />
         <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/drawable/confirm_button_highlight.xml" value="0.2815" />
+        <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/drawable/ic_alert_broadcast_icon.xml" value="0.2815" />
+        <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/drawable/my_location_button.xml" value="0.2815" />
         <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/drawable/report_button_highlight.xml" value="0.2815" />
+        <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/layout/activity_main.xml" value="0.9" />
+        <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/layout/alert_button.xml" value="0.92875" />
         <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/layout/alert_menu.xml" value="0.8705357142857143" />
-        <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/layout/alerts_menu_dialog.xml" value="0.5128968253968254" />
+        <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/layout/alerts_menu_dialog.xml" value="1.1" />
         <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/layout/alerts_options_dialog.xml" value="0.9105392156862745" />
-        <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/layout/login_dialog.xml" value="0.23958333333333334" />
+        <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/layout/login_dialog.xml" value="1.0" />
+        <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/layout/register_dialog.xml" value="0.5128968253968254" />
         <entry key="..\:/SC7UserFiles/Universidad/Semestre-9/_Proyecto/RPAG_App/app/src/main/res/menu/options_menu.xml" value="0.63" />
       </map>
     </option>

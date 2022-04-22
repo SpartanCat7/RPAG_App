@@ -27,6 +27,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -34,7 +35,14 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.storage.UploadTask;
 import com.integrator.rpagv2.R;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.location.LocationComponent;
+import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions;
+import com.mapbox.mapboxsdk.location.OnCameraTrackingChangedListener;
+import com.mapbox.mapboxsdk.location.modes.CameraMode;
+import com.mapbox.mapboxsdk.location.modes.RenderMode;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
@@ -85,6 +93,12 @@ public class MainActivity extends AppCompatActivity implements
     private ImageProvider mImageProvider;
     private UserProvider mUserProvider;
 
+
+    MapView mapView;
+    FloatingActionButton btnAlertMenu;
+    FloatingActionButton btnPanToDeviceLocation;
+    Menu optionsMenu;
+
     public static final String LOG_TAG = "RPAG-Log";
 
     private static final int CAMERA_REQUEST = 1888;
@@ -95,6 +109,11 @@ public class MainActivity extends AppCompatActivity implements
     final static String LOGIN_DIALOG_TAG = "LOGIN_DIALOG_TAG";
     final static String REGISTER_DIALOG_TAG = "REGISTER_DIALOG_TAG";
     final static String ALERT_OPTIONS_DIALOG_TAG = "ALERT_OPTIONS_DIALOG_TAG";
+
+    final public static String ACTION_SHOW_ALERT = "ACTION_SHOW_ALERT";
+    final public static String EXTRA_SHOW_ALERT_ID_TAG = "EXTRA_SHOW_ALERT_ID_TAG";
+    private boolean actionShowAlertStarted = false;
+
     /*
     AlertClass claseAccidente = new AlertClass(
             1,  "Accidente", R.drawable.frontal_crash, "icon_accidente");
@@ -131,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements
     final static int CORTE_ELECTRICO_CLASS_ID = 8;
 
     final static AlertClass[] listClasesAlertas = {
-            new AlertClass(CUSTOM_CLASS_ID, R.drawable.alert_menu, "icon_custom_alert", R.string.custom_alert, null),
+            new AlertClass(CUSTOM_CLASS_ID, R.drawable.custom_alert_icon_orange, "icon_custom_alert", R.string.custom_alert, null),
             new AlertClass(ACCIDENTE_CLASS_ID, R.drawable.accident, "icon_accidente", R.string.accidente, "paramedics"),
             new AlertClass(INCENDIO_CLASS_ID, R.drawable.fire, "icon_incendio", R.string.incendio, "firefighters"),
             new AlertClass(HERIDO_CLASS_ID, R.drawable.wounded, "icon_herido", R.string.herido, "paramedics"),
@@ -174,8 +193,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void RegisterBroadcastReceivers() {
-        Log.d(LOG_TAG,"RegisterBroadcastReceivers()");
-
         IntentFilter listAlertasUpdateFilter = new IntentFilter(BackgroundService.ACTION_LISTALERTAS_UPDATE);
         listAlertasUpdateFilter.addCategory(Intent.CATEGORY_DEFAULT);
         listAlertsDataUpdateReceiver = new ListAlertasUpdateReceiver();
@@ -193,7 +210,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void InitializeBackgroundService() {
-        Log.d(LOG_TAG,"InitializeBackgroundService()");
         Intent backgroundService = new Intent(this, BackgroundService.class);
         //backgroundService.putExtra(CLASS_LIST_TAG, listClasesAlertas);
         backgroundService.setAction(BackgroundService.ACTION_START_FOREGROUND_SERVICE);
@@ -205,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements
 
     void InstanciateMapbox(){
         Mapbox.getInstance(this, accessToken);
-        Log.d(LOG_TAG, "Initializing with Token: " + getString(R.string.mapbox_access_token));
+        Log.d(LOG_TAG, "Initializing Mapbox with Token: " + getString(R.string.mapbox_access_token));
         try {
             MapboxSearchSdk.initialize(getApplication(), getString(R.string.mapbox_access_token), new DefaultLocationProvider(getApplication()));
         } catch (Exception e) {
@@ -215,9 +231,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     void InitializeVariables() {
-
         adminNumEmergencias = new AdminNumEmergencias((AdminNumEmergencias.getSystemCountry(this)));
-
     }
 
     private void InitializeFirebase() {
@@ -233,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements
 
     public double locationLatitude, locationLongitude;
 
-    void GetPermissions(){
+    private void GetPermissions(){
         ArrayList<String> permissionsToGetList = new ArrayList<>();
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED){
@@ -282,10 +296,13 @@ public class MainActivity extends AppCompatActivity implements
             System.exit(0);
         } else {
             for (String permission : permissions) {
+                Log.d(LOG_TAG, "Permission acquired: " + permission);
                 if (permission.equals(Manifest.permission.ACCESS_FINE_LOCATION)) {
                     Intent broadcastIntent = new Intent();
                     broadcastIntent.setAction(BackgroundService.ACTION_LOCATION_PERMISSIONS_GRANTED);
                     sendBroadcast(broadcastIntent);
+
+                    enableMapboxLocationComponent(myMapboxMap.getStyle());
                 }
             }
         }
@@ -299,7 +316,6 @@ public class MainActivity extends AppCompatActivity implements
         String onboardingState = preferences.getString(Onboarding.ONBOARDING_USED_PREFKEY, Onboarding.ONBOARDING_NOT_USED);
         if (onboardingState.equals(Onboarding.ONBOARDING_NOT_USED)) {
             showOnboarding();
-            Log.i(LOG_TAG, "Launching Onboarding");
         }
     }
 
@@ -307,11 +323,6 @@ public class MainActivity extends AppCompatActivity implements
         Intent onboardingIntent = new Intent(this, Onboarding.class);
         startActivity(onboardingIntent);
     }
-
-    MapView mapView;
-    ImageButton btnAlertMenu;
-
-    Menu optionsMenu;
 
     void InitializeUI() {
         mapView = findViewById(R.id.mapView);
@@ -329,6 +340,15 @@ public class MainActivity extends AppCompatActivity implements
                     Toast.makeText(MainActivity.this, "Please log in to send alerts", Toast.LENGTH_SHORT).show();
                 }
 
+            }
+        });
+
+        btnPanToDeviceLocation = findViewById(R.id.btnPanToDeviceLocation);
+
+        btnPanToDeviceLocation.setOnClickListener(v -> {
+            LocationComponent locationComponent = myMapboxMap.getLocationComponent();
+            if (locationComponent.isLocationComponentActivated()) {
+                myMapboxMap.getLocationComponent().setCameraMode(CameraMode.TRACKING);
             }
         });
     }
@@ -375,18 +395,72 @@ public class MainActivity extends AppCompatActivity implements
                         );
 
                         mapboxLoaded = true;
-                        Log.d(LOG_TAG, "mapboxLoaded = true");
+                        Log.d(LOG_TAG, "Mapbox loaded");
 
-                        if (alertDataProvided) {
+                        if (listAlertData.size() > 0) {
                             showUiAlerts();
+                            if (ACTION_SHOW_ALERT.equals(getIntent().getAction()) && !actionShowAlertStarted) {
+                                focusCameraOnAlert(getIntent().getStringExtra(EXTRA_SHOW_ALERT_ID_TAG));
+                            }
                         }
-                        if (locationProvided) {
-                            updateLocationSymbol();
-                        }
+
+
+                        enableMapboxLocationComponent(style);
+
+
                     }
                 });
             }
         });
+    }
+
+    private void enableMapboxLocationComponent(Style style) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            Log.d(LOG_TAG, "No permissions for LocationComponent yet");
+        } else {
+            LocationComponent locationComponent = myMapboxMap.getLocationComponent();
+            if (!locationComponent.isLocationComponentActivated()) {
+                locationComponent.activateLocationComponent(new LocationComponentActivationOptions.Builder(this, style).build());
+                locationComponent.setLocationComponentEnabled(true);
+                locationComponent.setRenderMode(RenderMode.COMPASS);
+
+                locationComponent.addOnCameraTrackingChangedListener(new OnCameraTrackingChangedListener() {
+                    @Override
+                    public void onCameraTrackingDismissed() {
+
+                    }
+
+                    @Override
+                    public void onCameraTrackingChanged(int currentMode) {
+                        if (currentMode == CameraMode.TRACKING) {
+                            locationComponent.zoomWhileTracking(16, 3000);
+                        }
+                    }
+                });
+
+                if (!ACTION_SHOW_ALERT.equals(getIntent().getAction())) {
+                    locationComponent.setCameraMode(CameraMode.TRACKING);
+                }
+            }
+        }
+    }
+
+    private void focusCameraOnAlert(String alertId) {
+        if (alertId != null) {
+            for (int i = 0; i < listAlertData.size(); i++) {
+                if (alertId.equals(listAlertData.get(i).getId())) {
+                    CameraPosition cameraPosition = new CameraPosition.Builder()
+                            .target(new LatLng(listAlertData.get(i).getLatitude(), listAlertData.get(i).getLongitude()))
+                            .zoom(18f)
+                            .build();
+                    myMapboxMap.easeCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), 2500);
+
+                    actionShowAlertStarted = true;
+                    break;
+                }
+            }
+        }
+
     }
 
     void openLoginDialog() {
@@ -437,7 +511,7 @@ public class MainActivity extends AppCompatActivity implements
                         mUserProvider.create(task.getResult().getUser().getUid(), username).addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
-                                Log.d(LOG_TAG, "Username " + username + " correctly registered with " + task.getResult().getUser().getUid());
+                                Log.i(LOG_TAG, "Username " + username + " correctly registered with " + task.getResult().getUser().getUid());
                             }
                         });
                         dialog.registerSuccessful();
@@ -474,27 +548,6 @@ public class MainActivity extends AppCompatActivity implements
 
         UIAlert alert = new UIAlert(data, alertClass, symbol);
         uiAlertList.add(alert);
-    }
-
-    void updateLocationSymbol() {
-        Log.i(LOG_TAG, "updateLocationSymbol()");
-        if(myLocationSymbol != null) {
-            symbolManager.delete(myLocationSymbol);
-            myLocationSymbol = symbolManager.create(new SymbolOptions()
-                    .withLatLng(new LatLng(locationLatitude, locationLongitude))
-                    .withIconImage(myLocationSymbolName)
-                    .withIconSize(0.15f)
-                    .withIconOffset(new Float[] {0.0f, -0.5f}));
-            Log.i(LOG_TAG, "Updated Self Location Symbol: " + locationLatitude + " - " + locationLongitude);
-        } else {
-            myLocationSymbol = symbolManager.create(new SymbolOptions()
-                    .withLatLng(new LatLng(locationLatitude, locationLongitude))
-                    .withIconImage(myLocationSymbolName)
-                    .withIconSize(0.15f)
-                    .withIconOffset(new Float[] {0.0f, -0.5f}));
-            Log.i(LOG_TAG, "New Self Location Symbol: " + locationLatitude + " - " + locationLongitude);
-        }
-
     }
 
     UIAlert getAlertaBySymbol(Symbol symbol){
@@ -577,8 +630,18 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
+    public Context getActContext() {
+        return getApplicationContext();
+    }
+
+    @Override
     public String getCurrentUserId() {
-        return currentUser.getUid();
+        if (currentUser != null) {
+            return currentUser.getUid();
+        } else {
+            return null;
+        }
+
     }
 
     @Override
@@ -830,7 +893,7 @@ public class MainActivity extends AppCompatActivity implements
         startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK));
     }
 
-    private boolean alertDataProvided = false;
+    // private boolean alertDataProvided = false;
     private class ListAlertasUpdateReceiver extends BroadcastReceiver {
 
         @Override
@@ -849,16 +912,18 @@ public class MainActivity extends AppCompatActivity implements
 
                 if (mapboxLoaded) {
                     showUiAlerts();
+                    if (ACTION_SHOW_ALERT.equals(getIntent().getAction()) && !actionShowAlertStarted) {
+                        focusCameraOnAlert(getIntent().getStringExtra(EXTRA_SHOW_ALERT_ID_TAG));
+                    }
                 }
 
-                alertDataProvided = true;
+                // alertDataProvided = true;
             } else {
                 Log.i(LOG_TAG, "PackDatos is NULL!");
             }
         }
     }
 
-    private boolean locationProvided = false;
     private class LocationUpdateReceiver extends BroadcastReceiver {
 
         @Override
@@ -867,11 +932,6 @@ public class MainActivity extends AppCompatActivity implements
 
             locationLatitude = intent.getExtras().getDouble(BackgroundService.LATITUDE_TAGNAME);
             locationLongitude = intent.getExtras().getDouble(BackgroundService.LONGITUDE_TAGNAME);
-            if(mapboxLoaded) {
-                updateLocationSymbol();
-            }
-
-            locationProvided = true;
         }
     }
 

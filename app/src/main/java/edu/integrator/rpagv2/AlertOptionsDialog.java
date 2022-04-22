@@ -35,6 +35,7 @@ import com.mapbox.search.ReverseGeoOptions;
 import com.mapbox.search.ReverseGeocodingSearchEngine;
 import com.mapbox.search.SearchCallback;
 import com.mapbox.search.SearchRequestTask;
+import com.mapbox.search.result.SearchAddress;
 import com.mapbox.search.result.SearchResult;
 
 import org.jetbrains.annotations.NotNull;
@@ -139,9 +140,13 @@ public class AlertOptionsDialog extends DialogFragment {
                         reportsCount += 1;
                     }
 
-                    if (vote.getUserId().equals(alertOptionsDialogInterface.getCurrentUserId())) {
-                        voteCastedByUser = vote;
+                    String userId = alertOptionsDialogInterface.getCurrentUserId();
+                    if (userId != null) {
+                        if (vote.getUserId().equals(userId)) {
+                            voteCastedByUser = vote;
+                        }
                     }
+
                 }
 
                 updateVoteButtonStates();
@@ -158,44 +163,15 @@ public class AlertOptionsDialog extends DialogFragment {
         else
             txtTitle.setText(alert.getAlertClass().name_string_ID);
 
-        imgAlertIcon.setImageDrawable(getContext().getDrawable(alert.getAlertClass().icon));
+        imgAlertIcon.setImageDrawable(getActivity().getDrawable(alert.getAlertClass().icon));
 
         //txtCoordinates.setText(alert.lat + " / " + alert.len);
 
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         txtDate.setText(dateFormat.format(alert.getAlertData().getDate()));
 
-        btnConfirm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                for (int i = 0; i < listVotes.size(); i++) {
-                    if (alertOptionsDialogInterface.getCurrentUserId().equals(listVotes.get(i).getUserId())) {
-
-                    }
-                }
-                Vote newVote = new Vote(null, alert.getAlertData().getId(), alertOptionsDialogInterface.getCurrentUserId(), new Date(), true);
-
-                mVoteProvider.create(newVote).addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(MainActivity.LOG_TAG, "Positive vote registered");
-                    }
-                });
-            }
-        });
-        btnReport.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Vote newVote = new Vote(null, alert.getAlertData().getId(), alertOptionsDialogInterface.getCurrentUserId(), new Date(), false);
-
-                mVoteProvider.create(newVote).addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(MainActivity.LOG_TAG, "Negative vote registered");
-                    }
-                });
-            }
-        });
+        btnConfirm.setOnClickListener(newPositiveVote);
+        btnReport.setOnClickListener(newNegativeVote);
 
         imgAlertPhoto.setVisibility(View.GONE);
         mImageProvider = new ImageProvider();
@@ -219,10 +195,18 @@ public class AlertOptionsDialog extends DialogFragment {
                 if(editComment.getText().toString().length() > 0) {
                     alertOptionsDialogInterface.sendAlertComment(alert, editComment.getText().toString(), AlertOptionsDialog.this);
                 } else {
-                    Toast.makeText(getContext(), getText(R.string.comment_missing), Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), getText(R.string.comment_missing), Toast.LENGTH_LONG).show();
                 }
             }
         });
+
+        if (alertOptionsDialogInterface.getCurrentUserId() == null) {
+            editComment.setEnabled(false);
+            btnComment.setEnabled(false);
+            btnConfirm.setEnabled(false);
+            btnReport.setEnabled(false);
+        }
+
         btnOpenComments.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -231,7 +215,7 @@ public class AlertOptionsDialog extends DialogFragment {
         });
 
         reverseGeocoding = MapboxSearchSdk.createReverseGeocodingSearchEngine();
-        ReverseGeoOptions options = new ReverseGeoOptions.Builder(Point.fromLngLat(alert.getAlertData().getLongitude(), alert.getAlertData().getLongitude()))
+        ReverseGeoOptions options = new ReverseGeoOptions.Builder(Point.fromLngLat(alert.getAlertData().getLongitude(), alert.getAlertData().getLatitude()))
                 .limit(1)
                 .build();
 
@@ -250,10 +234,10 @@ public class AlertOptionsDialog extends DialogFragment {
         }
 
         for (int i = 0; i < trueSeg; i++) {
-            segments.add(new Segment("", "", ContextCompat.getColor(getContext(), R.color.colorGreen)));
+            segments.add(new Segment("", "", ContextCompat.getColor(getActivity(), R.color.colorGreen)));
         }
         for (int i = 0; i < falseSeg; i++) {
-            segments.add(new Segment("", "", ContextCompat.getColor(getContext(), R.color.colorRed)));
+            segments.add(new Segment("", "", ContextCompat.getColor(getActivity(), R.color.colorRed)));
         }
         //if (!segments.isEmpty())
         //    barView.setSegments(segments);
@@ -300,7 +284,7 @@ public class AlertOptionsDialog extends DialogFragment {
                 @Override
                 public void onSuccess(Void aVoid) {
                     try {
-                        Toast.makeText(getContext(), getString(R.string.positive_vote_entered), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), getString(R.string.positive_vote_entered), Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -317,7 +301,7 @@ public class AlertOptionsDialog extends DialogFragment {
                 @Override
                 public void onSuccess(Void aVoid) {
                     try {
-                        Toast.makeText(getContext(), getString(R.string.negative_vote_entered), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), getString(R.string.negative_vote_entered), Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -333,7 +317,7 @@ public class AlertOptionsDialog extends DialogFragment {
                 @Override
                 public void onSuccess(Void unused) {
                     try {
-                        Toast.makeText(getContext(), getString(R.string.positive_vote_entered), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), getString(R.string.positive_vote_entered), Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -349,7 +333,7 @@ public class AlertOptionsDialog extends DialogFragment {
                 @Override
                 public void onSuccess(Void unused) {
                     try {
-                        Toast.makeText(getContext(), getString(R.string.negative_vote_entered), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), getString(R.string.negative_vote_entered), Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -365,7 +349,7 @@ public class AlertOptionsDialog extends DialogFragment {
                 @Override
                 public void onSuccess(Void unused) {
                     try {
-                        Toast.makeText(getContext(), getString(R.string.vote_retired), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), getString(R.string.vote_retired), Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -422,6 +406,7 @@ public class AlertOptionsDialog extends DialogFragment {
     public interface AlertOptionsDialogInterface {
         void sendAlertComment(UIAlert alert, String comentario, AlertOptionsDialog dialog);
         void openComments(UIAlert alert);
+        Context getActContext();
         String getCurrentUserId();
     }
 

@@ -127,7 +127,7 @@
                     android:layout_height="50dp"
                     android:padding="5dp"
                     android:layout_marginStart="10dp"
-                    android:src="@drawable/alert_menu"/>
+                    android:src="@drawable/custom_alert_icon_orange"/>
                 <EditText
                     android:id="@+id/editTxtCustomAlert"
                     android:layout_width="match_parent"

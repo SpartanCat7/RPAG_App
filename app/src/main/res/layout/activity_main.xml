@@ -14,18 +14,35 @@
         android:layout_height="match_parent"
         mapbox:mapbox_cameraTargetLat="-17.3727"
         mapbox:mapbox_cameraTargetLng="-66.1633"
-        mapbox:mapbox_cameraZoom="11" />
+        mapbox:mapbox_cameraZoom="10" />
 
-    <ImageButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnAlertMenu"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:scaleType="fitCenter"
-        android:background="@null"
-        android:layout_marginBottom="20dp"
-        android:src="@drawable/alert_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
+        android:src="@drawable/ic_alert_broadcast_icon"
+        android:tint="@color/colorWhite"
+        app:backgroundTint="@color/colorRedOrange"
+        app:borderWidth="0dp"
+        app:maxImageSize="45dp"
+        android:scaleX="1.4"
+        android:scaleY="1.4"
+        app:fabCustomSize="60dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnPanToDeviceLocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/icon_my_location"
+        android:backgroundTint="@color/dark"
+        app:backgroundTint="@color/dark"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="90dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
