@@ -98,14 +98,13 @@ public class AdminNumEmergencias {
     }
     */
 
-    public String getEmergencyNumber(AlertClass alertClass) {
-        String numberToReturn = null;
+    public HelpNumber getEmergencyNumber(String helpService) {
         for (HelpNumber helpNumber : localNumbersList) {
-            if (alertClass.help_service.equals(helpNumber.getClassCode())) {
-                numberToReturn = helpNumber.getNumber();
+            if (helpService.equals(helpNumber.getClassCode())) {
+                return helpNumber;
             }
         }
-        return numberToReturn;
+        return null;
     }
 
     /*
@@ -134,9 +133,9 @@ public class AdminNumEmergencias {
         return "bo";
     }
 
-    void callEmergencyNumber(Context context, String number) {
+    void callEmergencyNumber(Context context, HelpNumber helpNumber) {
         try {
-            Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + number));
+            Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + helpNumber.getNumber()));
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
@@ -156,29 +155,36 @@ public class AdminNumEmergencias {
         }
     }
 
-    void dialogEmergencyCall(final Context context, final String number) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle(R.string.llamada_emergencia);
-        builder.setMessage(R.string.dialogo_llamar);
+    void dialogEmergencyCall(final Context context, final String helpService) {
+        HelpNumber helpNumber = getEmergencyNumber(helpService);
 
-        DialogInterface.OnClickListener llamarEmergencias = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                callEmergencyNumber(context, number);
-            }
-        };
-        DialogInterface.OnClickListener cancelarLlamadaEmergencias = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Log.i("RPAG-Log", "Llamada Cancelada");
-            }
-        };
+        if (helpNumber != null) {
+            String helpServiceName = context.getResources().getString(helpNumber.getClassNameId());
 
-        builder.setPositiveButton(R.string.llamar, llamarEmergencias);
-        builder.setNegativeButton(R.string.cancelar, cancelarLlamadaEmergencias);
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle(R.string.llamada_emergencia);
+            String message = context.getResources().getString(R.string.dialogo_llamar, helpServiceName, helpNumber.getNumber());
+            builder.setMessage(message);
 
-        AlertDialog dialog = builder.create();
-        dialog.show();
+            DialogInterface.OnClickListener llamarEmergencias = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    callEmergencyNumber(context, helpNumber);
+                }
+            };
+            DialogInterface.OnClickListener cancelarLlamadaEmergencias = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Log.i("RPAG-Log", "Llamada Cancelada");
+                }
+            };
+
+            builder.setPositiveButton(R.string.llamar, llamarEmergencias);
+            builder.setNegativeButton(R.string.cancelar, cancelarLlamadaEmergencias);
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
     }
 
 

@@ -689,10 +689,7 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         if (alertClass.help_service != null) {
-            String numeroEmergencia = adminNumEmergencias.getEmergencyNumber(alertClass);
-            if (numeroEmergencia != null) {
-                adminNumEmergencias.dialogEmergencyCall(this, numeroEmergencia);
-            }
+            adminNumEmergencias.dialogEmergencyCall(this, alertClass.help_service);
         }
     }
 

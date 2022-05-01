@@ -25,7 +25,7 @@
     <string name="alert_sent">Alerta enviada</string>
     <string name="alert_not_sent">Alerta no pudo ser enviada</string>
     <string name="permisos_faltantes">Permisos Faltantes</string>
-    <string name="dialogo_llamar">¿Desearia llamar a servicios de emergencia locales?</string>
+    <string name="dialogo_llamar">¿Desearia llamar a %1$s (%2$s)?</string>
     <string name="llamar">Llamar</string>
     <string name="cancelar">Cancelar</string>
     <string name="llamada_emergencia">LLamada de Emergencia</string>
