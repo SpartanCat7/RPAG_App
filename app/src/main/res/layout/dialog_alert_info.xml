@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:fillViewport="true"
+    android:background="@color/dark">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layoutAlertOptionsHeader"
+            android:layout_width="380dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:paddingHorizontal="30dp"
+            android:paddingVertical="20dp">
+
+            <TextView
+                android:id="@+id/txtAlertOptionsTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Title"
+                android:textColor="@color/colorWhite"
+                android:textSize="24sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/imgAlertOptionsIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:contentDescription="alert options menu icon"
+                android:src="@drawable/icon_type_accident"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <mobi.gspd.segmentedbarview.SegmentedBarView
+            android:id="@+id/alertOptionsTrueFalseBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layoutAlertOptionsHeader"
+            android:padding="3dp"
+            android:layout_marginHorizontal="20dp"
+            app:sbv_empty_segment_text="No votes"
+            app:sbv_segment_gap_width="10dp"
+            app:sbv_segment_text_size="20sp"
+            app:sbv_show_description_text="false"
+            app:sbv_side_style="angle"
+            app:sbv_side_text_style="twoSided"
+            app:sbv_value_sign_height="30dp"
+            app:sbv_value_sign_round="8dp"
+            app:sbv_value_sign_width="30dp" />
+
+        <TableLayout
+            android:id="@+id/layoutAlertOptionsData"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/alertOptionsTrueFalseBar"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="10dp"
+            android:stretchColumns="1">
+            <TableRow android:paddingVertical="4dp">
+                <TextView
+                    android:layout_weight="0"
+                    android:id="@+id/txtAlertOptionsAddressLabel"
+                    android:paddingRight="20dp"
+                    android:text="@string/address"
+                    android:textColor="@color/colorWhite"/>
+                <TextView
+                    android:id="@+id/txtAlertOptionsAddressData"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="\?"
+                    android:minLines="1"
+                    android:maxLines="3"
+                    android:textColor="@color/colorWhite"
+                    android:background="@color/darker"/>
+
+            </TableRow>
+            <TableRow android:paddingVertical="4dp">
+                <TextView
+                    android:layout_weight="0"
+                    android:id="@+id/txtAlertOptionsDateLabel"
+                    android:paddingRight="20dp"
+                    android:text="@string/date"
+                    android:textColor="@color/colorWhite"/>
+                <TextView
+                    android:id="@+id/txtAlertOptionsDateData"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="\?"
+                    android:minLines="1"
+                    android:maxLines="3"
+                    android:textColor="@color/colorWhite"
+                    android:background="@color/darker"/>
+
+            </TableRow>
+            <TableRow android:paddingVertical="4dp">
+                <TextView
+                    android:id="@+id/txtAlertOptionsConfirmationsLabel"
+                    android:layout_weight="0"
+                    android:paddingRight="20dp"
+                    android:text="@string/confirmaciones"
+                    android:textColor="@color/colorWhite"/>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:id="@+id/txtAlertOptionsConfirmationsData"
+                    android:gravity="center"
+                    android:text="0"
+                    android:textColor="@color/colorGreen"
+                    android:background="@color/darker"/>
+            </TableRow>
+            <TableRow android:paddingVertical="4dp">
+                <TextView
+                    android:id="@+id/txtAlertOptionsReportsLabel"
+                    android:layout_weight="0"
+                    android:paddingRight="20dp"
+                    android:text="@string/reports"
+                    android:textColor="@color/colorWhite"/>
+                <TextView
+                    android:id="@+id/txtAlertOptionsReportsData"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="0"
+                    android:textColor="@color/colorRed"
+                    android:background="@color/darker"/>
+            </TableRow>
+            <!--
+            <TableRow android:paddingVertical="4dp">
+                <TextView
+                    android:id="@+id/txtAlertOptionsCoordinatesLabel"
+                    android:layout_weight="0"
+                    android:paddingRight="20dp"
+                    android:text="@string/coordinates"
+                    android:textColor="@color/colorWhite"/>
+                <TextView
+                    android:id="@+id/txtAlertOptionsCoordinatesData"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="\? / \?"
+                    android:textColor="@color/colorWhite"
+                    android:background="@color/darker"/>
+
+            </TableRow>
+            -->
+        </TableLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutAlertOptionsVote"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layoutAlertOptionsData"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="10dp">
+            <Button
+                android:id="@+id/btnAlertOptionsVoteConfirm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="5dp"
+                android:text="@string/btn_confirmar_alerta"
+                android:textColor="@color/colorWhite"
+                android:background="@drawable/confirm_button"/>
+            <Button
+                android:id="@+id/btnAlertOptionsVoteReport"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="5dp"
+                android:text="@string/btn_reportar"
+                android:textColor="@color/colorWhite"
+                android:background="@drawable/report_button"/>
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/imgAlertPhoto"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/layoutAlertOptionsVote"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:paddingVertical="10dp"
+            android:src="@drawable/test_image"
+            android:scaleType="centerCrop"
+            app:layout_constraintHeight_max="300dp"
+            app:layout_constrainedHeight="true"
+            android:visibility="visible"/>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layoutAlertOptionsComment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imgAlertPhoto"
+            android:paddingVertical="10dp"
+            android:paddingHorizontal="20dp">
+
+            <EditText
+                android:id="@+id/editAlertOptionsCommentField"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnAlertOptionsCommentButton"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginEnd="10dp"
+                android:backgroundTint="@color/colorWhite"
+                android:textColor="@color/colorWhite"/>
+
+            <Button
+                android:id="@+id/btnAlertOptionsCommentButton"
+                android:layout_width="75dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:text="@string/btnComentar_enviar"
+                android:textSize="20sp"
+                android:textColor="@color/colorWhite"
+                android:background="@drawable/dark_button"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+        <LinearLayout
+            android:id="@+id/layoutAlertOptionsImageComments"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layoutAlertOptionsComment"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="10dp">
+            <ImageView
+                android:id="@+id/imgAlertOptionsImage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:contentDescription="Included image" />
+            <Button
+                android:id="@+id/btnAlertOptionsOpenCommentsButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/comments"
+                android:textColor="@color/colorWhite"
+                android:background="@drawable/dark_button"/>
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+</ScrollView>

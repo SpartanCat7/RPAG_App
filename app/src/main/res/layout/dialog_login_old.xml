@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="40dp"
+    android:background="@color/dark">
+    <ImageView
+        android:id="@+id/login_image"
+        android:layout_width="250dp"
+        android:layout_height="125dp"
+        android:src="@drawable/user"
+        android:layout_marginVertical="20dp"
+        app:tint="@color/colorWhite" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingVertical="20dp">
+        <!--<TextView
+            android:id="@+id/login_email_labelText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Email"/>-->
+        <TextView
+            android:id="@+id/login_email_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/email_error"
+            android:textColor="@color/colorWhite"
+            android:background="@color/colorRed"
+            android:textAlignment="center"
+            android:textSize="6pt"/>
+        <EditText
+            android:id="@+id/login_email_field"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:hint="Phone number"
+            android:textColorHint="@color/colorWhite"
+            android:backgroundTint="@color/colorWhite"
+            android:textColor="@color/colorWhite"/>
+        <!--<TextView
+            android:id="@+id/login_password_labelText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Password"/>-->
+        <TextView
+            android:id="@+id/login_password_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/password_error"
+            android:textColor="@color/colorWhite"
+            android:background="@color/colorRed"
+            android:textAlignment="center"
+            android:textSize="6pt"/>
+        <EditText
+            android:id="@+id/login_password_field"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Code"
+            android:inputType="textPassword"
+            android:textColorHint="@color/colorWhite"
+            android:backgroundTint="@color/colorWhite"
+            android:textColor="@color/colorWhite"/>
+    </LinearLayout>
+    <Button
+        android:id="@+id/btnLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/login"
+        android:background="@drawable/dark_button"
+        android:textColor="@color/colorWhite"/>
+
+
+</LinearLayout>

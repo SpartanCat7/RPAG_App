@@ -33,6 +33,9 @@
         android:id="@+id/btnRegisterOption"
         android:title="@string/register"/>
     <item
+        android:id="@+id/btnProfileSettingsOption"
+        android:title="Perfil_"/>
+    <item
         android:id="@+id/btnLogOut"
         android:title="@string/log_out" />
 

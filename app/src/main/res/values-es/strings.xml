@@ -36,7 +36,13 @@
     <string name="username_error">Nombre de usuario invalido</string>
     <string name="email">Email</string>
     <string name="email_error">Email invalido</string>
+    <string name="phone">Numero de telefono</string>
+    <string name="phone_error">Numero de telefono invalido</string>
+    <string name="code">Codigo</string>
+    <string name="code_error">Codigo invalido</string>
     <string name="login">Ingresar</string>
+    <string name="send_code">Enviar Codigo</string>
+    <string name="confirm">Confirmar</string>
     <string name="address">Dirección</string>
     <string name="confirmaciones">Votos V</string>
     <string name="reports">Votos F</string>
@@ -57,6 +63,7 @@
     <string name="spanish">Español</string>
     <string name="english">Ingles</string>
     <string name="log_in">Ingresar</string>
+    <string name="profile">Perfil</string>
     <string name="about_this_app">Acerca de</string>
     <string name="log_out">Salir de cuenta</string>
     <string name="comment_missing">Por favor, escriba un comentario primero</string>

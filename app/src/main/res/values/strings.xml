@@ -35,7 +35,13 @@
     <string name="username_error">Invalid username</string>
     <string name="email">Email</string>
     <string name="email_error">Invalid email</string>
+    <string name="phone">Phone</string>
+    <string name="phone_error">Invalid phone number</string>
+    <string name="code">Code</string>
+    <string name="code_error">Invalid code</string>
     <string name="login">Login</string>
+    <string name="send_code">Send Code</string>
+    <string name="confirm">Confirm</string>
     <string name="address">Address</string>
     <string name="confirmaciones">Votes T</string>
     <string name="reports">Votes F</string>
@@ -56,6 +62,7 @@
     <string name="spanish">Spanish</string>
     <string name="english">English</string>
     <string name="log_in">Log In</string>
+    <string name="profile">Profile</string>
     <string name="about_this_app">About this app</string>
     <string name="log_out">Log out</string>
     <string name="comment_missing">Please write a comment first</string>
@@ -72,4 +79,20 @@
     <string name="positive_vote_entered">Positive vote entered</string>
     <string name="negative_vote_entered">Negative vote entered</string>
     <string name="vote_retired">Vote retired</string>
+    <string name="title_activity_profile_settings">ProfileSettingsActivity</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
 </resources>

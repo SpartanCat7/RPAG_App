@@ -5,7 +5,7 @@
     xmlns:mapbox="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="edu.integrator.rpagv2.MainActivity"
+    tools:context="edu.gradproject.rpagv3.MainActivity"
     android:background="@color/dark">
 
     <com.mapbox.mapboxsdk.maps.MapView

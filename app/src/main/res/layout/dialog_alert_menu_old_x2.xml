@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/colorWhite"
+    android:id="@+id/layoutAlertMenu">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorAccent"
+            android:gravity="center">
+            <CheckBox
+                android:id="@+id/chkIncluidePic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/incluir_imagen"
+                android:textColor="@color/colorWhite"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/btnAccidente"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:padding="5dp"
+                android:src="@drawable/icon_type_accident"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/accidente"
+                android:textSize="16sp"
+                android:padding="10dp"
+                android:paddingStart="30dp"
+                android:paddingEnd="30dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btnIncendio"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:padding="5dp"
+                android:src="@drawable/icon_type_fire"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/incendio"
+                android:textSize="16sp"
+                android:padding="10dp"
+                android:paddingStart="30dp"
+                android:paddingEnd="30dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btnHerido"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:padding="5dp"
+                android:src="@drawable/icon_type_wounded"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/herido"
+                android:textSize="16sp"
+                android:padding="10dp"
+                android:paddingStart="30dp"
+                android:paddingEnd="30dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btnBloqueo"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:padding="5dp"
+                android:src="@drawable/icon_type_blocked"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/bloqueo"
+                android:textSize="16sp"
+                android:padding="10dp"
+                android:paddingStart="30dp"
+                android:paddingEnd="30dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btnCongestionamiento"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:padding="5dp"
+                android:src="@drawable/icon_type_traffic"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/congestionamiento"
+                android:textSize="16sp"
+                android:padding="10dp"
+                android:paddingStart="30dp"
+                android:paddingEnd="30dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btnMarchas"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:padding="5dp"
+                android:src="@drawable/icon_type_marching"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/marchas"
+                android:textSize="16sp"
+                android:padding="10dp"
+                android:paddingStart="30dp"
+                android:paddingEnd="30dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btnCalleDanada"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:padding="5dp"
+                android:src="@drawable/icon_type_street_damage"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/calle_danada"
+                android:textSize="16sp"
+                android:padding="10dp"
+                android:paddingStart="30dp"
+                android:paddingEnd="30dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btnCorte"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:padding="5dp"
+                android:src="@drawable/icon_type_power_cut"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/corte_electrico"
+                android:textSize="16sp"
+                android:padding="10dp"
+                android:paddingStart="30dp"
+                android:paddingEnd="30dp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+
+</LinearLayout>

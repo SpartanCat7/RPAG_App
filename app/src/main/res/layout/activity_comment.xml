@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="20dp"
-    tools:context="edu.integrator.rpagv2.CommentActivity"
+    tools:context="edu.gradproject.rpagv3.CommentActivity"
     android:background="@color/darker">
 
     <TextView
