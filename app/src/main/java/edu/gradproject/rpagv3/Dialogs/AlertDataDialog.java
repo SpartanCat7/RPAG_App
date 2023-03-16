@@ -20,6 +20,8 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.DialogFragment;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.mapbox.geojson.Point;
@@ -138,8 +140,7 @@ public class AlertDataDialog extends DialogFragment {
         }
         //mVoteProvider = new VoteProvider();
         voteListenerRegistration = VoteProvider.getVotes(alertRef).addSnapshotListener((value, error) -> {
-            if (value != null)
-            {
+            if (value != null) {
                 listVotes = VoteProvider.DocSnapListToVoteArrayList(value.getDocuments());
                 confirmationsCount = 0;
                 reportsCount = 0;
@@ -182,19 +183,26 @@ public class AlertDataDialog extends DialogFragment {
 
         imgAlertPhoto.setVisibility(View.GONE);
 
-        btnComment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (alertDataDialogInterface.getCurrentUserId() != null) {
-                    if(editComment.getText().toString().length() > 0) {
-                        //alertDataDialogInterface.sendAlertComment(alert, editComment.getText().toString(), AlertDataDialog.this);
-                        CommentProvider.addComment(new Comment(null, null, alertDataDialogInterface.getCurrentUserId(), new Date(), editComment.getText().toString(), true), alertRef);
-                    } else {
-                        Toast.makeText(getActivity(), getText(R.string.comment_missing), Toast.LENGTH_LONG).show();
-                    }
+        btnComment.setOnClickListener(v -> {
+            if (alertDataDialogInterface.getCurrentUserId() != null) {
+                if(editComment.getText().toString().length() > 0) {
+                    //alertDataDialogInterface.sendAlertComment(alert, editComment.getText().toString(), AlertDataDialog.this);
+                    CommentProvider.addComment(
+                            new Comment(null, null, alertDataDialogInterface.getCurrentUserId(), new Date(), editComment.getText().toString(), true),
+                            alertRef)
+                            .addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) {
+                                    Toast.makeText(getActivity(), getText(R.string.comment_successful), Toast.LENGTH_LONG).show();
+                                    clearCommentTextBox();
+                                } else {
+                                    Toast.makeText(getActivity(), getText(R.string.comment_error), Toast.LENGTH_LONG).show();
+                                }
+                            });
                 } else {
-                    Toast.makeText(getActivity(), "Debe ingresar a su cuenta para enviar comentarios", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), getText(R.string.comment_missing), Toast.LENGTH_LONG).show();
                 }
+            } else {
+                Toast.makeText(getActivity(), "Debe ingresar a su cuenta para enviar comentarios", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -244,16 +252,23 @@ public class AlertDataDialog extends DialogFragment {
             btnReport.setOnClickListener(newVote);
             btnReport.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.report_button, null));
         } else {
-            if (voteCastedByUser.isVoteTrue()) {
-                btnConfirm.setOnClickListener(setVoteInactive);
-                btnConfirm.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.confirm_button_highlight, null));
-                btnReport.setOnClickListener(setVoteActive);
-                btnReport.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.report_button, null));
+            if (voteCastedByUser.isActive()) {
+                if (voteCastedByUser.isVoteTrue()) {
+                    btnConfirm.setOnClickListener(setVoteInactive);
+                    btnConfirm.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.confirm_button_highlight, null));
+                    btnReport.setOnClickListener(setVoteActive);
+                    btnReport.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.report_button, null));
+                } else {
+                    btnConfirm.setOnClickListener(setVoteActive);
+                    btnConfirm.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.confirm_button, null));
+                    btnReport.setOnClickListener(setVoteInactive);
+                    btnReport.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.report_button_highlight, null));
+                }
             } else {
                 btnConfirm.setOnClickListener(setVoteActive);
                 btnConfirm.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.confirm_button, null));
-                btnReport.setOnClickListener(setVoteInactive);
-                btnReport.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.report_button_highlight, null));
+                btnReport.setOnClickListener(setVoteActive);
+                btnReport.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.report_button, null));
             }
         }
     }
@@ -297,12 +312,7 @@ public class AlertDataDialog extends DialogFragment {
     View.OnClickListener setVoteActive = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            boolean isTrue = false;
-            if (v.getId() == R.id.btnAlertOptionsVoteConfirm) {
-                isTrue = true;
-            } /*else if (v.getId() == R.id.btnAlertOptionsVoteReport) {
-                isTrue = false;
-            }*/
+            boolean isTrue = v.getId() == R.id.btnAlertOptionsVoteConfirm;
             VoteProvider.updateVote(alertRef, voteCastedByUser.getId(), isTrue, true).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     try {
@@ -320,12 +330,7 @@ public class AlertDataDialog extends DialogFragment {
     View.OnClickListener setVoteInactive = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            boolean isTrue = false;
-            if (v.getId() == R.id.btnAlertOptionsVoteConfirm) {
-                isTrue = true;
-            } /*else if (v.getId() == R.id.btnAlertOptionsVoteReport) {
-                isTrue = false;
-            }*/
+            boolean isTrue = v.getId() == R.id.btnAlertOptionsVoteConfirm;
             VoteProvider.updateVote(alertRef, voteCastedByUser.getId(), isTrue, false).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     try {

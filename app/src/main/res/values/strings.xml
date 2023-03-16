@@ -66,6 +66,9 @@
     <string name="about_this_app">About this app</string>
     <string name="log_out">Log out</string>
     <string name="comment_missing">Please write a comment first</string>
+    <string name="comment_successful">Comment entered</string>
+    <string name="comment_error">Error. Comment not entered</string>
+    <string name="error_wait_and_try">Error. Wait a moment please</string>
     <string name="local_help_numbers">Local help numbers</string>
     <string name="police">Police</string>
     <string name="firefighters">Firefighters</string>

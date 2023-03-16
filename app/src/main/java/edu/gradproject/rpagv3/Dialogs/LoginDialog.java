@@ -106,16 +106,17 @@ public class LoginDialog extends DialogFragment {
                 PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
                     @Override
                     public void onVerificationCompleted(@NonNull PhoneAuthCredential phoneAuthCredential) {
-
+                        Toast.makeText(activity, "Verificación exitosa", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onVerificationFailed(@NonNull FirebaseException e) {
-
+                        Toast.makeText(activity, "Verificación fallida", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onCodeSent(@NonNull String vId, @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
+                        Toast.makeText(activity, "Codigo enviado a " + phoneNumber, Toast.LENGTH_SHORT).show();
                         verificationId = vId;
                         phoneField.setEnabled(false);
                         codeField.setEnabled(true);

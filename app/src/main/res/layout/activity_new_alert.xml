@@ -79,6 +79,7 @@
                     android:text="Imagen"
                     android:paddingBottom="20dp"/>
                 <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/layout_NewAlert_PhotoViewLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingBottom="20dp"

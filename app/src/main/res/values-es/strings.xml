@@ -67,6 +67,9 @@
     <string name="about_this_app">Acerca de</string>
     <string name="log_out">Salir de cuenta</string>
     <string name="comment_missing">Por favor, escriba un comentario primero</string>
+    <string name="comment_successful">Comentario ingresado</string>
+    <string name="comment_error">Error. Comentario no ingresado</string>
+    <string name="error_wait_and_try">Error. Espere un momento porfavor</string>
     <string name="local_help_numbers">Numeros de ayuda locales</string>
     <string name="police">Policia</string>
     <string name="firefighters">Bomberos</string>

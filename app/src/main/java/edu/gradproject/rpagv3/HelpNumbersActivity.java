@@ -7,6 +7,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,11 +18,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 import edu.gradproject.rpagv3.Models.HelpNumber;
 import edu.gradproject.rpagv3.Providers.CountryProvider;
@@ -58,7 +65,9 @@ public class HelpNumbersActivity extends AppCompatActivity {
                     HelpNumber newHelpNumber = new HelpNumber();
                     newHelpNumber.setClassCode(number.getId());
                     newHelpNumber.setCountryCode(currentCountry);
-                    newHelpNumber.setNumber((String) number.get("telfNumber"));
+                    newHelpNumber.setNumber((String) number.get("telephone"));
+                    newHelpNumber.setImageUrl((String) number.get("imageUrl"));
+                    newHelpNumber.setName((String) number.get("name"));
 
                     localNumbersList.add(newHelpNumber);
                 }
@@ -115,12 +124,21 @@ public class HelpNumbersActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull HelpNumbersActivity.ViewHolder holder, int position) {
             //Integer classNameId = helpNumberList.get(position).getClassNameId();
             //String number = helpNumberList.get(position).getNumber();
-            Drawable classIcon = ContextCompat.getDrawable(getApplicationContext(), helpNumberList.get(position).getClassIconId());
+//            Drawable classIcon = ContextCompat.getDrawable(getApplicationContext(), helpNumberList.get(position).getClassIconId());
 
-            holder.getTxtHelpNumberLabel().setText(helpNumberList.get(position).getClassNameId());
+//            holder.getTxtHelpNumberLabel().setText(helpNumberList.get(position).getClassNameId());
+            holder.getTxtHelpNumberLabel().setText(helpNumberList.get(position).getName());
             holder.getTxtHelpNumber().setText(helpNumberList.get(position).getNumber());
-            if (classIcon != null)
-                holder.getImgHelpServiceIcon().setImageDrawable(classIcon);
+            Executors.newSingleThreadExecutor().execute(() -> {
+                try {
+                    InputStream in = new URL(helpNumberList.get(position).getImageUrl()).openStream();
+                    Bitmap bitmap = BitmapFactory.decodeStream(in);
+                    runOnUiThread(() -> holder.getImgHelpServiceIcon().setImageBitmap(bitmap));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+//            if (classIcon != null) holder.getImgHelpServiceIcon().setImageDrawable(classIcon);
         }
 
         @Override

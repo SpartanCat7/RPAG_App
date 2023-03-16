@@ -5,6 +5,7 @@ import static edu.gradproject.rpagv3.MainActivity.LOG_TAG;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 
@@ -16,6 +17,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -23,6 +25,7 @@ import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -56,13 +59,14 @@ public class NewAlertActivity extends AppCompatActivity {
     private TextView lblAlertTypeName;
     private EditText txtDescriptionInput;
     private Button btnSendAlert, btnChangeAlertType, btnAddImage, btnRemoveImage;
+    private ConstraintLayout layoutPhotoPreview;
 
     private static final int CAMERA_REQUEST = 1888;
     private static final int CAMERA_PERMISSION_CODE = 100;
 
     private static final String CHANGE_TYPE_DIALOG_TAG = "CHANGE_TYPE_DIALOG_TAG";
     public static final String ALERT_TYPE_ID_EXTRA = "ALERT_TYPE_ID_EXTRA";
-    public static final String DEVICE_LAT_EXTRA = "DEVICE_LAT_EXTRA", DEVICE_LNG_EXTRA = "DEVICE_LNG_EXTRA";
+    public static final String DEVICE_LAT_EXTRA = "DEVICE_LAT_EXTRA", DEVICE_LNG_EXTRA = "DEVICE_LNG_EXTRA", DEVICE_ADDRESS_EXTRA = "DEVICE_ADDRESS_EXTRA";
     public static final String NEW_ALERT_JSON_DATA_KEY = "NEW_ALERT_JSON_DATA_KEY";
     private static final String NEW_IMAGE_FILE_PATH_KEY = "NEW_IMAGE_FILE_PATH_KEY";
 
@@ -76,6 +80,7 @@ public class NewAlertActivity extends AppCompatActivity {
     private String alertTypeId;
     private static final String ALERT_TYPE_ID_SAVED_KEY = "ALERT_TYPE_ID_SAVED_KEY";
     private double userLat, userLng;
+    private String deviceAddress;
     private static final String LAT_SAVED_KEY = "LAT_SAVED_KEY";
     private static final String LNG_SAVED_KEY = "LNG_SAVED_KEY";
     private ArrayList<ImageData> imageDataList = new ArrayList<>();
@@ -94,6 +99,7 @@ public class NewAlertActivity extends AppCompatActivity {
         alertTypeId = getIntent().getExtras().getString(ALERT_TYPE_ID_EXTRA);
         userLat = getIntent().getDoubleExtra(DEVICE_LAT_EXTRA, 0);
         userLng = getIntent().getDoubleExtra(DEVICE_LNG_EXTRA, 0);
+        deviceAddress = getIntent().getStringExtra(DEVICE_ADDRESS_EXTRA);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -109,6 +115,10 @@ public class NewAlertActivity extends AppCompatActivity {
         btnChangeAlertType = findViewById(R.id.btn_NewAlert_ChangeType);
         btnAddImage = findViewById(R.id.btn_NewAlert_AddImage);
         btnRemoveImage = findViewById(R.id.btn_NewAlert_RemoveImage);
+
+        layoutPhotoPreview = findViewById(R.id.layout_NewAlert_PhotoViewLayout);
+        layoutPhotoPreview.setVisibility(View.GONE);
+        btnAddImage.setVisibility(View.VISIBLE);
 
         txtDescriptionInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -131,6 +141,17 @@ public class NewAlertActivity extends AppCompatActivity {
             SendNewAlert();
         });
 
+        btnRemoveImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (imageDataList.size() > 0) {
+                    imageDataList.remove(imageDataList.get(0));
+                    layoutPhotoPreview.setVisibility(View.GONE);
+                    btnAddImage.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
         btnChangeAlertType.setOnClickListener(view -> {
             if (alertTypeListFullyLoaded) {
                 showChangeAlertTypeDialog();
@@ -143,7 +164,7 @@ public class NewAlertActivity extends AppCompatActivity {
             takeImage();
         });
 
-        mAlertTypeProvider.getAllAlertTypes().addOnSuccessListener(queryDocumentSnapshots -> {
+        mAlertTypeProvider.getActiveAlertTypes().addOnSuccessListener(queryDocumentSnapshots -> {
             ArrayList<AlertType> newAlertTypeList = new ArrayList<>();
             alertTypeListFullyLoaded = false;
             for (DocumentSnapshot snap : queryDocumentSnapshots.getDocuments()) {
@@ -185,9 +206,9 @@ public class NewAlertActivity extends AppCompatActivity {
 
     AlertData newAlertDataFromForm() {
         if (mAuth.getCurrentUser() != null) {
-            return new AlertData(null, mAuth.getCurrentUser().getUid(), alertTypeId, userLat, userLng, new Date(), description, null, false);
+            return new AlertData(null, mAuth.getCurrentUser().getUid(), alertTypeId, userLat, userLng, deviceAddress, new Date(), description, null, false);
         } else {
-            return new AlertData(null, null, alertTypeId, userLat, userLng, new Date(), description, null, false);
+            return new AlertData(null, null, alertTypeId, userLat, userLng, deviceAddress, new Date(), description, null, false);
         }
     }
 
@@ -237,6 +258,7 @@ public class NewAlertActivity extends AppCompatActivity {
                             }
                         });
                     }
+                    NewAlertActivity.this.finish();
                 } else {
                     Toast.makeText(getApplicationContext(), getText(R.string.alert_not_sent), Toast.LENGTH_SHORT).show();
                 }
@@ -353,6 +375,14 @@ public class NewAlertActivity extends AppCompatActivity {
         return Bitmap.createScaledBitmap(bitmap, Math.round(bitmap.getWidth() * scale), Math.round(bitmap.getHeight() * scale), true);
     }
 
+    private Bitmap RotateBitmap90Degrees(Bitmap bitmap) {
+        Matrix matrix = new Matrix();
+        //matrix.postScale(scaleWidth, scaleHeight);
+        matrix.postRotate(90);
+
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -366,21 +396,24 @@ public class NewAlertActivity extends AppCompatActivity {
             txtDescriptionInput.setText(alertData.getDescription());
             imgAlertTypeIcon.setImageBitmap(AlertTypeProvider.getAlertType(alertData.getTypeId(), alertTypeList).getIconBitmap());
 
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.remove("NewPhotoFilePath");
-            //editor.remove("NewPhotoAlertId");
-            editor.apply();
+//            SharedPreferences.Editor editor = sharedPref.edit();
+//            editor.remove("NewPhotoFilePath");
+//            editor.remove("NewPhotoAlertId");
+//            editor.apply();
 
             Bitmap savedBitmap = BitmapFactory.decodeFile(tempFilePath);
             Bitmap scaledBitmap = RescaleBitmap(savedBitmap, 1280);
+            Bitmap rotatedBitmap = RotateBitmap90Degrees(scaledBitmap);
 
-            imgAlertPhoto.setImageBitmap(scaledBitmap);
+            imgAlertPhoto.setImageBitmap(rotatedBitmap);
 
             final String imageName = alertData.getId() + "_" + new Date().getTime() + ".jpg";
-            final File savedImageFile = SaveBitmapAsJPEG(scaledBitmap, 80, getExternalFilesDir(Environment.DIRECTORY_PICTURES), imageName);
+            final File savedImageFile = SaveBitmapAsJPEG(rotatedBitmap, 80, getExternalFilesDir(Environment.DIRECTORY_PICTURES), imageName);
 
             if (savedImageFile != null) {
-                imageDataList.add(new ImageData(savedImageFile.getName(), new Date(), scaledBitmap, savedImageFile));
+                imageDataList.add(new ImageData(savedImageFile.getName(), new Date(), rotatedBitmap, savedImageFile));
+                layoutPhotoPreview.setVisibility(View.VISIBLE);
+                btnAddImage.setVisibility(View.GONE);
             } else {
                 Toast.makeText(this, "Image could not be saved", Toast.LENGTH_SHORT).show();
             }

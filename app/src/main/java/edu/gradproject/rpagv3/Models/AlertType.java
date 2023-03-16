@@ -8,18 +8,17 @@ public class AlertType {
     private String id;
     private String name;
     private String description;
-    private boolean is_misc;
     private String icon;
-    private int lifetime;
+    private Integer lifetime;
+    private Boolean active;
 
     //private byte[] iconFile;
     private Bitmap iconBitmap;
 
-    public AlertType(String id, String name, String description, boolean is_misc, String icon, int lifetime) {
+    public AlertType(String id, String name, String description, String icon, int lifetime) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.is_misc = is_misc;
         this.icon = icon;
         this.lifetime = lifetime;
     }
@@ -28,9 +27,9 @@ public class AlertType {
         this.id = snapshot.getId();
         this.name = snapshot.get("name", String.class);
         this.description = snapshot.get("description", String.class);
-        this.is_misc = Boolean.TRUE.equals(snapshot.get("is_misc", boolean.class));
         this.icon = snapshot.get("icon", String.class);
         this.lifetime = snapshot.get("lifetime", int.class);
+        this.active = snapshot.get("active", Boolean.class);
     }
 
     public String getId() {
@@ -55,14 +54,6 @@ public class AlertType {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public boolean isIs_misc() {
-        return is_misc;
-    }
-
-    public void setIs_misc(boolean is_misc) {
-        this.is_misc = is_misc;
     }
 
     public String getIcon() {

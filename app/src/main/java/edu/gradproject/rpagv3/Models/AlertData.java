@@ -2,19 +2,13 @@ package edu.gradproject.rpagv3.Models;
 
 import com.firebase.geofire.GeoFireUtils;
 import com.firebase.geofire.GeoLocation;
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.gson.Gson;
-import com.google.gson.JsonParser;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
-import kotlin.TypeCastException;
 
 public class AlertData implements java.io.Serializable {
     private String id;
@@ -24,6 +18,7 @@ public class AlertData implements java.io.Serializable {
     private double latitude;
     private double longitude;
     private String geohash;
+    private String address;
 
     private Date date;
 
@@ -37,6 +32,7 @@ public class AlertData implements java.io.Serializable {
         this.latitude = snapshot.get("latitude", Double.class);
         this.longitude = snapshot.get("longitude", Double.class);
         this.geohash = snapshot.get("geohash", String.class);
+        this.address = snapshot.get("location", String.class);
         this.typeId = snapshot.get("typeId", String.class);
         this.date = snapshot.getDate("date");
         this.description = snapshot.get("description", String.class);
@@ -76,7 +72,7 @@ public class AlertData implements java.io.Serializable {
         this.deleted = false;
     }
 
-    public AlertData(String id, String userId, String typeId, double latitude, double longitude, Date date, String description, List<String> images, boolean deleted) {
+    public AlertData(String id, String userId, String typeId, double latitude, double longitude, String address, Date date, String description, List<String> images, boolean deleted) {
         this.id = id;
         this.userId = userId;
         this.typeId = typeId;
@@ -85,6 +81,7 @@ public class AlertData implements java.io.Serializable {
         this.date = date;
         this.description = description;
         this.geohash = GeoFireUtils.getGeoHashForLocation(new GeoLocation(latitude, longitude));
+        this.address = address;
         this.images = images;
         this.deleted = deleted;
     }
@@ -166,6 +163,14 @@ public class AlertData implements java.io.Serializable {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public String getTypeId() {

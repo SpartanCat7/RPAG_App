@@ -154,6 +154,9 @@ public class AdminNumEmergencias {
         }
     }
 
+    /**
+     * Para eliminar mas tarde...
+     */
     public void dialogEmergencyCall(final Context context, final String helpService) {
         HelpNumber helpNumber = getEmergencyNumber(helpService);
 

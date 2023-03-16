@@ -39,6 +39,10 @@ public class AlertTypeProvider {
         return mCollection.get();
     }
 
+    public Task<QuerySnapshot> getActiveAlertTypes() {
+        return mCollection.whereEqualTo("active", true).get();
+    }
+
     public void getTypeIconFile(Context context, String filename, getTypeIconFileCallback callback) {
         File file = getTypeIconFileFromCache(context, filename);
         if (file.exists()) {

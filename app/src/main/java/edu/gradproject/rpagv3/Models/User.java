@@ -30,7 +30,7 @@ public class User {
         this.username = snap.getString("username");
         this.type = snap.getString("type");
         this.telfNumber = snap.getString("telf_number");
-        this.telfNumber = snap.getString("full_name");
+        this.fullName = snap.getString("full_name");
         this.email = snap.getString("email");
         this.active = Boolean.TRUE.equals(snap.getBoolean("active"));
     }

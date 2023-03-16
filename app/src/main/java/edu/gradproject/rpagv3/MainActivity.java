@@ -24,6 +24,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
@@ -40,13 +42,21 @@ import com.mapbox.mapboxsdk.plugins.annotation.Symbol;
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager;
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions;
 import com.mapbox.search.MapboxSearchSdk;
+import com.mapbox.search.ResponseInfo;
+import com.mapbox.search.ReverseGeoOptions;
+import com.mapbox.search.ReverseGeocodingSearchEngine;
+import com.mapbox.search.SearchCallback;
+import com.mapbox.search.SearchRequestTask;
 import com.mapbox.search.location.DefaultLocationProvider;
+import com.mapbox.search.result.SearchResult;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 import edu.gradproject.rpagv3.Dialogs.AlertDataDialog;
@@ -60,7 +70,6 @@ import edu.gradproject.rpagv3.Models.User;
 import edu.gradproject.rpagv3.Providers.AlertTypeProvider;
 import edu.gradproject.rpagv3.Providers.CommentProvider;
 import edu.gradproject.rpagv3.Providers.UserProvider;
-import edu.gradproject.rpagv3.Utils.AdminNumEmergencias;
 import edu.gradproject.rpagv3.Utils.LocaleManager;
 
 import static android.content.pm.PackageManager.GET_META_DATA;
@@ -136,6 +145,9 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayList<AlertData> pendingAlertsToAddToMap = new ArrayList<>();
 
+    public double locationLatitude, locationLongitude;
+    private String address;
+
     /*
     final static AlertClass[] listClasesAlertas = {
             new AlertClass(CUSTOM_CLASS_ID, R.drawable.custom_alert_icon_orange, "icon_custom_alert", R.string.custom_alert, null),
@@ -153,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
 
     ListAlertasUpdateReceiver listAlertsDataUpdateReceiver;
     LocationUpdateReceiver locationUpdateReceiver;
-    AdminNumEmergencias adminNumEmergencias;
+//    AdminNumEmergencias adminNumEmergencias;
     //Alerta alertaSeleccionada;
     //boolean mapboxLoaded = false;
 
@@ -168,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         firstOnboarding();
         InitializeUI();
-        InitializeVariables();
+//        InitializeVariables();
         InitializeFirebase();
 
         if (!alertTypeListFullyLoaded) {
@@ -222,9 +234,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    void InitializeVariables() {
-        adminNumEmergencias = new AdminNumEmergencias((AdminNumEmergencias.getSystemCountry(this)));
-    }
+//    void InitializeVariables() {
+//        adminNumEmergencias = new AdminNumEmergencias((AdminNumEmergencias.getSystemCountry(this)));
+//    }
 
     private void InitializeFirebase() {
         mAuth = FirebaseAuth.getInstance();
@@ -237,57 +249,65 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void LoadAlertTypes() {
-        mAlertTypeProvider.getAllAlertTypes().addOnSuccessListener(queryDocumentSnapshots -> {
-            ArrayList<AlertType> newAlertTypeList = new ArrayList<>();
-            alertTypeListFullyLoaded = false;
-            for (DocumentSnapshot snap : queryDocumentSnapshots.getDocuments()) {
-                AlertType type = new AlertType(snap);
-                mAlertTypeProvider.getTypeIconFile(this, type.getIcon(), new AlertTypeProvider.getTypeIconFileCallback() {
-                    @Override
-                    public void onSuccess(byte[] bytes) {
-                        type.setIconBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
-                    }
-
-                    @Override
-                    public void onFailure() {
-                        Log.e(LOG_TAG, "COULD NOT GET AN ICON FILE FOR TYPE: " + type.getName() + " (" + type.getId() + ")");
-                        type.setIconBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.custom_alert_icon_orange));
-                    }
-
-                    @Override
-                    public void Finally() {
-                        newAlertTypeList.add(type);
-                        AlertTypeProvider.updateAlertTypeList(type, alertTypeList); // alertTypeList is updated until it is time to replace it entirely
-
-                        if (myMapboxMap.getStyle() != null && myMapboxMap.getStyle().isFullyLoaded()) {
-                            myMapboxMap.getStyle().addImage(type.getId(), type.getIconBitmap());
-                            ArrayList<AlertData> newList = pendingAlertsToAddToMap;
-                            for (AlertData data : pendingAlertsToAddToMap) {
-                                if (Objects.equals(data.getTypeId(), type.getId())) {
-                                    addAlertToMap(data, type);
-                                    newList.remove(data);
-                                }
-                            }
-                            pendingAlertsToAddToMap = newList;
-                        } else {
-                            pendingTypesToLoadToStyle.add(type);
-                        }
-
-                        if (newAlertTypeList.size() == queryDocumentSnapshots.getDocuments().size()) { // check if newAlertTypeList is ready to become the new alertTypeList
-                            alertTypeList = newAlertTypeList;
-                            alertTypeListFullyLoaded = true;
-                            if (pendingAlertTypesDialog) {
-                                showNewAlertTypeDialog();
-                                pendingAlertTypesDialog = false;
-                            }
-                        }
-                    }
-                });
+        mAlertTypeProvider.getActiveAlertTypes().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                QuerySnapshot queryDocumentSnapshots = task.getResult();
+                processAlertTypes(queryDocumentSnapshots);
+            } else {
+                Toast.makeText(MainActivity.this, "Error cargando tipos de alertas", Toast.LENGTH_SHORT).show();
+                System.exit(0);
             }
         });
     }
 
-    public double locationLatitude, locationLongitude;
+    private void processAlertTypes(QuerySnapshot queryDocumentSnapshots) {
+        ArrayList<AlertType> newAlertTypeList = new ArrayList<>();
+        alertTypeListFullyLoaded = false;
+        for (DocumentSnapshot snap : queryDocumentSnapshots.getDocuments()) {
+            AlertType type = new AlertType(snap);
+            mAlertTypeProvider.getTypeIconFile(MainActivity.this, type.getIcon(), new AlertTypeProvider.getTypeIconFileCallback() {
+                @Override
+                public void onSuccess(byte[] bytes) {
+                    type.setIconBitmap(BitmapFactory.decodeByteArray(bytes, 0, bytes.length));
+                }
+
+                @Override
+                public void onFailure() {
+                    Log.e(LOG_TAG, "COULD NOT GET AN ICON FILE FOR TYPE: " + type.getName() + " (" + type.getId() + ")");
+                    type.setIconBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.custom_alert_icon_orange));
+                }
+
+                @Override
+                public void Finally() {
+                    newAlertTypeList.add(type);
+                    AlertTypeProvider.updateAlertTypeList(type, alertTypeList); // alertTypeList is updated until it is time to replace it entirely
+
+                    if (myMapboxMap.getStyle() != null && myMapboxMap.getStyle().isFullyLoaded()) {
+                        myMapboxMap.getStyle().addImage(type.getId(), type.getIconBitmap());
+                        ArrayList<AlertData> newList = new ArrayList<>(pendingAlertsToAddToMap);
+                        for (AlertData data : pendingAlertsToAddToMap) {
+                            if (Objects.equals(data.getTypeId(), type.getId())) {
+                                addAlertToMap(data, type);
+                                newList.remove(data);
+                            }
+                        }
+                        pendingAlertsToAddToMap = newList;
+                    } else {
+                        pendingTypesToLoadToStyle.add(type);
+                    }
+
+                    if (newAlertTypeList.size() == queryDocumentSnapshots.getDocuments().size()) { // check if newAlertTypeList is ready to become the new alertTypeList
+                        alertTypeList = newAlertTypeList;
+                        alertTypeListFullyLoaded = true;
+                        if (pendingAlertTypesDialog) {
+                            showNewAlertTypeDialog();
+                            pendingAlertTypesDialog = false;
+                        }
+                    }
+                }
+            });
+        }
+    }
 
     private void GetPermissions(){
         ArrayList<String> permissionsToGetList = new ArrayList<>();
@@ -367,6 +387,7 @@ public class MainActivity extends AppCompatActivity {
         newAlertActivityIntent.putExtra(NewAlertActivity.ALERT_TYPE_ID_EXTRA, typeId);
         newAlertActivityIntent.putExtra(NewAlertActivity.DEVICE_LAT_EXTRA, locationLatitude);
         newAlertActivityIntent.putExtra(NewAlertActivity.DEVICE_LNG_EXTRA, locationLongitude);
+        newAlertActivityIntent.putExtra(NewAlertActivity.DEVICE_ADDRESS_EXTRA, address);
         startActivity(newAlertActivityIntent);
     }
 
@@ -446,7 +467,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
-                ArrayList<AlertType> newList = pendingTypesToLoadToStyle;
+                ArrayList<AlertType> newList = new ArrayList<>(pendingTypesToLoadToStyle);
                 for (AlertType alertType : pendingTypesToLoadToStyle) {
                     style.addImage(alertType.getId(), alertType.getIconBitmap());
                     newList.remove(alertType);
@@ -682,12 +703,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void addAlertToMap(AlertData data, AlertType type) {
+        if (data.getDate().getTime() < new Date().getTime() - ((long) type.getLifetime() * 60 * 1000)) return;
 
         Float[] offset = {0f, 2.5f};
         Symbol symbol = symbolManager.create(new SymbolOptions()
                 .withLatLng(new LatLng(data.getLatitude(), data.getLongitude()))
                 .withIconImage(type.getId())
-                .withIconSize(0.30f)
+                .withIconSize(0.6f)
                 .withIconOffset(offset));
 
         AlertSymbolBundle alertSymbolBundle = new AlertSymbolBundle(data, symbol);
@@ -751,6 +773,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void updateAddress() {
+        ReverseGeocodingSearchEngine reverseGeocoding = MapboxSearchSdk.createReverseGeocodingSearchEngine();
+        ReverseGeoOptions options = new ReverseGeoOptions.Builder(Point.fromLngLat(locationLongitude, locationLatitude))
+                .limit(1)
+                .build();
+        reverseGeocoding.search(options, new SearchCallback() {
+            @Override
+            public void onResults(@NonNull List<? extends SearchResult> list, @NonNull ResponseInfo responseInfo) {
+                address = list.get(0).getAddress().formattedAddress();
+            }
+
+            @Override
+            public void onError(@NonNull Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     private class LocationUpdateReceiver extends BroadcastReceiver {
 
         @Override
@@ -759,6 +799,7 @@ public class MainActivity extends AppCompatActivity {
 
             locationLatitude = intent.getExtras().getDouble(ForegroundService.LATITUDE_TAGNAME);
             locationLongitude = intent.getExtras().getDouble(ForegroundService.LONGITUDE_TAGNAME);
+            updateAddress();
 
             if (pendingNewAlertActivityTypeId != null) {
                 showNewAlertActivity(pendingNewAlertActivityTypeId);

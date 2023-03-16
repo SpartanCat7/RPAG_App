@@ -261,7 +261,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toTopOf="parent"
-                android:hint="Updated full name">
+                android:hint="New email">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/activity_settings_email_field"
                     android:layout_width="match_parent"

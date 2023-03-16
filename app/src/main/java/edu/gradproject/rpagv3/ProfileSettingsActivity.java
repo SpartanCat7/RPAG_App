@@ -99,6 +99,8 @@ public class ProfileSettingsActivity extends AppCompatActivity {
             userProvider.updateUserUsername(currentUser.getUserId(), newUsername).addOnCompleteListener(updateUsernameTask -> {
                 if (updateUsernameTask.isSuccessful()) {
                     Toast.makeText(this, "Username updated", Toast.LENGTH_SHORT).show();
+                    txtViewUsernameCurrent.setText(newUsername);
+                    layoutUsernameChange.setVisibility(View.GONE);
                 } else {
                     Toast.makeText(this, "ERROR: Could not update username", Toast.LENGTH_SHORT).show();
                 }
@@ -109,6 +111,8 @@ public class ProfileSettingsActivity extends AppCompatActivity {
             userProvider.updateUserPhone(currentUser.getUserId(), newPhone).addOnCompleteListener(updateUsernameTask -> {
                 if (updateUsernameTask.isSuccessful()) {
                     Toast.makeText(this, "Phone updated", Toast.LENGTH_SHORT).show();
+                    txtViewPhoneCurrent.setText(newPhone);
+                    layoutPhoneChange.setVisibility(View.GONE);
                 } else {
                     Toast.makeText(this, "ERROR: Could not update phone", Toast.LENGTH_SHORT).show();
                 }
@@ -122,6 +126,8 @@ public class ProfileSettingsActivity extends AppCompatActivity {
             userProvider.updateUserFullname(currentUser.getUserId(), newFullname).addOnCompleteListener(updateUsernameTask -> {
                 if (updateUsernameTask.isSuccessful()) {
                     Toast.makeText(this, "Full name updated: " + newFullname, Toast.LENGTH_SHORT).show();
+                    txtViewFullnameCurrent.setText(newFullname);
+                    layoutFullnameChange.setVisibility(View.GONE);
                 } else {
                     Toast.makeText(this, "ERROR: Could not update full name", Toast.LENGTH_SHORT).show();
                 }
@@ -132,6 +138,8 @@ public class ProfileSettingsActivity extends AppCompatActivity {
             userProvider.updateUserEmail(currentUser.getUserId(), newEmail).addOnCompleteListener(updateUsernameTask -> {
                 if (updateUsernameTask.isSuccessful()) {
                     Toast.makeText(this, "Email updated", Toast.LENGTH_SHORT).show();
+                    txtViewEmailCurrent.setText(newEmail);
+                    layoutEmailChange.setVisibility(View.GONE);
                 } else {
                     Toast.makeText(this, "ERROR: Could not update email", Toast.LENGTH_SHORT).show();
                 }

@@ -17,6 +17,6 @@ public class CountryProvider {
     }
 
     public Query getCountryNumbers(String countryCode) {
-        return mCollection.document(countryCode).collection("numbers");
+        return mCollection.document(countryCode).collection("Numbers");
     }
 }

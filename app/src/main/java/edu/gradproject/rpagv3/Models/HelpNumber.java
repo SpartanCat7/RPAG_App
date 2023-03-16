@@ -6,6 +6,8 @@ public class HelpNumber {
     private String countryCode;
     private String classCode;
     private String number;
+    private String imageUrl;
+    private String name;
 
     public String getCountryCode() {
         return countryCode;
@@ -29,6 +31,22 @@ public class HelpNumber {
 
     public void setNumber(String number) {
         this.number = number;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Integer getClassIconId() {

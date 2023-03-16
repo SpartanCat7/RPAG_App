@@ -42,7 +42,7 @@ public class AlertTypesDialog extends DialogFragment {
         btnCancel = view.findViewById(R.id.btnCancelAlertTypeDialog);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
-        alertTypeAdapter = new AlertTypeAdapter(mInterface);
+        alertTypeAdapter = new AlertTypeAdapter(mInterface, this);
         recyclerView.setAdapter(alertTypeAdapter);
     }
 
@@ -78,9 +78,11 @@ public class AlertTypesDialog extends DialogFragment {
     private static class AlertTypeAdapter extends RecyclerView.Adapter<AlertTypeViewHolder> {
 
         AlertTypesDialogInterface mInterface;
+        AlertTypesDialog dialog;
 
-        public AlertTypeAdapter(AlertTypesDialogInterface mInterface) {
+        public AlertTypeAdapter(AlertTypesDialogInterface mInterface, AlertTypesDialog dialog) {
             this.mInterface = mInterface;
+            this.dialog = dialog;
         }
 
         @NonNull
@@ -100,6 +102,7 @@ public class AlertTypesDialog extends DialogFragment {
             btn.setOnClickListener(view -> {
                 Toast.makeText(view.getContext(), "Selected: " + mInterface.getAlertTypes().get(holder.getBindingAdapterPosition()).getName(), Toast.LENGTH_SHORT).show();
                 mInterface.onAlertTypeClicked(holder.getTypeId());
+                dialog.dismiss();
             });
             if (mInterface.getAlertTypes().get(position).getIconBitmap() != null) {
                 img.setImageBitmap(mInterface.getAlertTypes().get(position).getIconBitmap());

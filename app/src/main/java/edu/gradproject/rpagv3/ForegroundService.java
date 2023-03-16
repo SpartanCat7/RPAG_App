@@ -149,7 +149,7 @@ public class ForegroundService extends Service {
     }
 
     private void LoadAlertTypes() {
-        mAlertTypeProvider.getAllAlertTypes().addOnSuccessListener(queryDocumentSnapshots -> {
+        mAlertTypeProvider.getActiveAlertTypes().addOnSuccessListener(queryDocumentSnapshots -> {
             for (DocumentSnapshot snap : queryDocumentSnapshots.getDocuments()) {
                 AlertType type = new AlertType(snap);
                 mAlertTypeProvider.getTypeIconFile(this, type.getIcon(), new AlertTypeProvider.getTypeIconFileCallback() {
@@ -285,14 +285,8 @@ public class ForegroundService extends Service {
                                 for (QuerySnapshot snap : alertQuerySnapshotsList) {
                                     if (snap != null) {
                                         for (DocumentSnapshot doc : snap.getDocuments()) {
-                                            //AlertData alertData = doc.toObject(AlertData.class);
-                                            //GeoLocation alertLocation = new GeoLocation(alertData.getLatitude(), alertData.getLongitude());
-
-                                            //alertDataList.add(doc.toObject(AlertData.class));
-                                            alertDataList.add(new AlertData(doc));
-//                                            if (GeoFireUtils.getDistanceBetween(alertLocation, lastUsedLocation) <= radiusInM) {
-//                                                ForegroundService.this.alertDataList.add(doc.toObject(AlertData.class));
-//                                            }
+                                            AlertData alert = new AlertData(doc);
+                                            alertDataList.add(alert);
                                         }
                                     }
                                 }
