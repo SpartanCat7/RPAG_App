@@ -61,7 +61,7 @@ public class AlertDataDialog extends DialogFragment {
 
     TextView txtTitle;
     ImageView imgAlertIcon;
-    TextView txtConfirmations, txtReports, txtAddress, txtDate;
+    TextView txtConfirmations, txtReports, txtAddress, txtDate, txtDescription;
     Button btnConfirm, btnReport;
     ImageView imgAlertPhoto;
     EditText editComment;
@@ -113,6 +113,7 @@ public class AlertDataDialog extends DialogFragment {
         //txtCoordinates = view.findViewById(R.id.txtAlertOptionsCoordinatesData);
         txtAddress = view.findViewById(R.id.txtAlertOptionsAddressData);
         txtDate = view.findViewById(R.id.txtAlertOptionsDateData);
+        txtDescription = view.findViewById(R.id.txtAlertOptionsDescriptionData);
         btnConfirm = view.findViewById(R.id.btnAlertOptionsVoteConfirm);
         btnReport = view.findViewById(R.id.btnAlertOptionsVoteReport);
         imgAlertPhoto = view.findViewById(R.id.imgAlertPhoto);
@@ -177,6 +178,8 @@ public class AlertDataDialog extends DialogFragment {
 
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         txtDate.setText(dateFormat.format(alert.getAlertData().getDate()));
+
+        txtDescription.setText(alert.getAlertData().getDescription() != null ? alert.getAlertData().getDescription() : "");
 
         btnConfirm.setOnClickListener(newVote);
         btnReport.setOnClickListener(newVote);

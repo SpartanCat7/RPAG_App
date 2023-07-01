@@ -142,6 +142,25 @@
                     android:textColor="@color/colorRed"
                     android:background="@color/darker"/>
             </TableRow>
+            <TableRow android:paddingVertical="4dp">
+                <TextView
+                    android:layout_weight="0"
+                    android:id="@+id/txtAlertOptionsDescriptionLabel"
+                    android:paddingRight="20dp"
+                    android:text="Descripción"
+                    android:textColor="@color/colorWhite"/>
+                <TextView
+                    android:id="@+id/txtAlertOptionsDescriptionData"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text=""
+                    android:minLines="1"
+                    android:maxLines="3"
+                    android:textColor="@color/colorWhite"
+                    android:background="@color/darker"/>
+
+            </TableRow>
             <!--
             <TableRow android:paddingVertical="4dp">
                 <TextView

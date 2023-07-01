@@ -839,7 +839,7 @@ public class MainActivity extends AppCompatActivity {
                 optionsMenu.findItem(R.id.btnLogOut).setVisible(true);
             } else {
                 optionsMenu.findItem(R.id.btnLoginOption).setVisible(true);
-                optionsMenu.findItem(R.id.btnRegisterOption).setVisible(true);
+                optionsMenu.findItem(R.id.btnRegisterOption).setVisible(false);
                 optionsMenu.findItem(R.id.btnProfileSettingsOption).setVisible(false);
                 optionsMenu.findItem(R.id.btnLogOut).setVisible(false);
             }

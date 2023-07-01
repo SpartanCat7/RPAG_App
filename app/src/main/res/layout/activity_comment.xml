@@ -12,7 +12,7 @@
         android:id="@+id/txtCommentsActivityTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Alert Comments"
+        android:text="@string/comments"
         app:layout_constraintTop_toTopOf="parent"
         android:textColor="@color/colorWhite"/>
 

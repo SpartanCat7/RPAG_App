@@ -15,6 +15,7 @@ import android.widget.TextView;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.ListenerRegistration;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import edu.gradproject.rpagv3.Models.Comment;
@@ -111,7 +112,7 @@ public class CommentActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             holder.getCommentTextView().setText(commentList.get(position).getText());
-            holder.getCommentDateTextView().setText(commentList.get(position).getDate().toString());
+            holder.getCommentDateTextView().setText(new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(commentList.get(position).getDate()));
             String userId = commentList.get(position).getUserId();
             if (userId != null) {
                 mUserProvider.getUserById(userId).addOnSuccessListener(documentSnapshot -> {

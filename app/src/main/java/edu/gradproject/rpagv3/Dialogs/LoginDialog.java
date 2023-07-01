@@ -74,7 +74,7 @@ public class LoginDialog extends DialogFragment {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                phoneNumber = charSequence.toString();
+                phoneNumber = "+591" + charSequence.toString();
             }
 
             @Override
@@ -102,6 +102,10 @@ public class LoginDialog extends DialogFragment {
 
         btnNextStep.setOnClickListener(v -> {
             if (verificationId == null) {
+                if (!phoneNumber.matches("\\+\\d{10,13}")) {
+                    Toast.makeText(getActivity(), "Numero de telefono invalido", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 FragmentActivity activity = getActivity();
                 PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
                     @Override
